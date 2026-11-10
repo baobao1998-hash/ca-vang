@@ -8,6 +8,7 @@ import { AREAS, SEARCH_DEBOUNCE_MS } from "../core/config.js";
 
 // Giữ lại cách tìm khi quay lại từ màn Chi tiết.
 const state = { q: "", type: "", subject: "", area: "", days: 0 };
+const PAGE_SIZE = 60;
 const TIME_CHIPS = [[0, "Mọi lúc"], [7, "7 ngày"], [30, "30 ngày"], [365, "1 năm"]];
 
 function card(r, q) {
@@ -95,7 +96,19 @@ export function renderSearch(root) {
       mount(grid, h("div", { class: "empty glass", style: { gridColumn: "1 / -1" } }, icon("search", 32), h("h2", null, "Không thấy kết quả"), h("p", null, "Thử gõ ít chữ hơn, hoặc bỏ bớt bộ lọc.")));
       return;
     }
-    mount(grid, ...list.map((r) => card(r, q)));
+    // Chỉ vẽ từng trang nhỏ (có hàng chục nghìn bằng chứng thì vẽ hết sẽ làm máy đứng hình); bấm "Xem thêm" để vẽ tiếp.
+    let shown = 0;
+    const more = h("button", { type: "button", class: "btn", style: { gridColumn: "1 / -1", justifySelf: "center" } });
+    const drawMore = () => {
+      const next = list.slice(shown, shown + PAGE_SIZE);
+      shown += next.length;
+      more.remove();
+      grid.append(...next.map((r) => card(r, q)));
+      if (shown < list.length) { more.textContent = `Xem thêm (còn ${list.length - shown})`; grid.append(more); }
+    };
+    more.addEventListener("click", drawMore);
+    grid.replaceChildren();
+    drawMore();
   }
 
   function refresh() { drawChips(); drawResults(); }

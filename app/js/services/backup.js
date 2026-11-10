@@ -3,7 +3,7 @@ import { SNAPSHOT_KEEP } from "../core/config.js";
 import { APP_VERSION, SCHEMA_VERSION } from "../core/version.js";
 import { emit } from "../core/events.js";
 import { dbAll, dbGet, dbPut } from "../data/db.js";
-import { migrateRecord, getFullBlob } from "../data/records.js";
+import { migrateRecord, getFullBlob, sanitizeRecord, safeImageMime } from "../data/records.js";
 import { makeThumb } from "./image.js";
 import { ensureFolders, findByName, listChanged, getJson, putJsonFull, deleteFile, getMeta, setMeta } from "./drive.js";
 
@@ -91,22 +91,27 @@ export async function importJson(file, { onProgress } = {}) {
   try { data = JSON.parse(await file.text()); } catch { throw new Error("File này không đọc được. Hãy chọn đúng file sao lưu Cá Vàng (.json)."); }
   if (!data || data.app !== "cavang" || !Array.isArray(data.records)) throw new Error("Đây không phải file sao lưu của Cá Vàng.");
   if (typeof data.schema === "number" && data.schema > SCHEMA_VERSION) throw new Error("File sao lưu này tạo bởi bản Cá Vàng mới hơn. Hãy cập nhật app rồi nhập lại.");
-  const images = data.images || {};
+  if (data.records.length > 200000) throw new Error("File sao lưu có quá nhiều bản ghi nên không nhập được.");
+  const images = data.images && typeof data.images === "object" && !Array.isArray(data.images) ? data.images : {};
   let added = 0, updated = 0, skipped = 0, n = 0;
   for (const raw of data.records) {
     onProgress?.(++n, data.records.length);
-    if (!raw || typeof raw.id !== "string" || !raw.updatedAt) { skipped++; continue; }
-    const rec = migrateRecord(raw);
+    const clean = sanitizeRecord(raw); // bỏ trường lạ, ép kiểu, cắt độ dài, từ chối id lạ
+    if (!clean) { skipped++; continue; }
+    const rec = migrateRecord(clean);
     const local = await dbGet("records", rec.id);
     if (local && Date.parse(local.updatedAt) >= Date.parse(rec.updatedAt)) { skipped++; continue; }
     rec.sync = { driveRecordId: local?.sync?.driveRecordId || null, dirty: true, lastSyncedAt: null };
-    const img = images[rec.id];
-    if (img && rec.kind === "image") {
-      const full = base64ToBlob(img.data, img.type || "image/jpeg");
-      let thumb;
-      try { thumb = await makeThumb(full); } catch { thumb = undefined; }
-      if (rec.file) rec.file = { ...rec.file, driveId: null, thumbDriveId: null }; // ảnh sẽ được tải lên Drive lần đồng bộ tới
-      await dbPut("blobs", { id: rec.id, full, thumb });
+    const img = Object.hasOwn(images, rec.id) ? images[rec.id] : null;
+    if (img && typeof img.data === "string" && img.data.length <= 60e6 && rec.kind === "image") {
+      let full = null;
+      try { full = base64ToBlob(img.data, safeImageMime(img.type)); } catch { /* ảnh hỏng: nhập bản ghi, bỏ ảnh */ }
+      if (full) {
+        let thumb;
+        try { thumb = await makeThumb(full); } catch { thumb = undefined; }
+        if (rec.file) rec.file = { ...rec.file, driveId: null, thumbDriveId: null }; // ảnh sẽ được tải lên Drive lần đồng bộ tới
+        await dbPut("blobs", { id: rec.id, full, thumb });
+      }
     }
     await dbPut("records", rec);
     await dbPut("outbox", { id: rec.id, op: "put", recordId: rec.id, tries: 0 });

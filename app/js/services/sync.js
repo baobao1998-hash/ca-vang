@@ -3,7 +3,7 @@
 const POLL_MS = 60 * 1000; // nhịp kiểm tra khi app đang mở
 import { on, emit } from "../core/events.js";
 import { dbGet, dbPut, dbDelete, dbAll } from "../data/db.js";
-import { migrateRecord, setFullLoader } from "../data/records.js";
+import { migrateRecord, setFullLoader, sanitizeRecord, safeDriveId } from "../data/records.js";
 import { isSignedIn, wasSignedIn, getToken, renewQuietly, preloadGis, needsRenewal, AuthError } from "./auth.js";
 import {
   ensureFolders, forgetFolders, monthFolder, uploadFileFull, downloadFile, putJsonFull, getJson,
@@ -35,8 +35,10 @@ const pool = async (items, n, fn) => {
 // ---------- Kéo về ----------
 
 // Ghi 1 bản ghi từ Drive vào máy nếu nó thắng. Trả về true nếu có ghi.
-async function applyRemote(remote, driveId, modifiedTime) {
-  if (!remote || typeof remote.id !== "string" || !remote.updatedAt) return false;
+async function applyRemote(rawRemote, driveId, modifiedTime) {
+  const remote = sanitizeRecord(rawRemote); // dữ liệu từ Drive cũng phải qua kiểm tra như file nhập
+  if (!remote) return false;
+  driveId = safeDriveId(driveId);
   const local = migrateRecord(await dbGet("records", remote.id));
   const rt = Date.parse(remote.updatedAt);
   if (local) {
@@ -75,12 +77,14 @@ async function pull(folders, progress) {
     // Thiết bị mới: tải snapshot mới nhất trước, rồi chỉ lấy phần chênh sau đó.
     const snap = await readLatestSnapshot();
     if (snap) {
+      snap.records = snap.records.slice(0, 200000);
       let n = 0;
       await pool(snap.records, 6, async (r) => {
-        if (await applyRemote(r, r.sync?.driveRecordId, undefined)) pulled++;
+        if (await applyRemote(r, r?.sync?.driveRecordId, undefined)) pulled++;
         progress?.(`Đang tải dữ liệu về… ${++n}/${snap.records.length}`);
       });
-      since = new Date(Date.parse(snap.createdAt) - 10 * 60000).toISOString();
+      const t = Date.parse(snap.createdAt);
+      if (!Number.isNaN(t)) since = new Date(t - 10 * 60000).toISOString();
     }
   }
   const files = (await listChanged(folders.records, since)).filter((f) => f.name.endsWith(".json"));

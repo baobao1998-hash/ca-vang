@@ -13,6 +13,39 @@ export function migrateRecord(r) {
   return r;
 }
 
+
+// ---------- Kiểm tra dữ liệu từ bên ngoài (file sao lưu, Drive) ----------
+// Mọi bản ghi đến từ file nhập hoặc từ Drive đều đi qua đây: chỉ giữ các trường đã biết, ép đúng kiểu, cắt độ dài, kiểm tra id.
+export const RECORD_ID_RE = /^[0-9A-Za-z_-]{10,40}$/;
+export const DRIVE_ID_RE = /^[0-9A-Za-z_-]{10,128}$/;
+const IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const str = (v, max) => (typeof v === "string" ? v.slice(0, max) : "");
+const strList = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === "string").slice(0, 100).map((x) => x.slice(0, 300)) : []);
+const isoOrNull = (v) => (typeof v === "string" && v.length <= 40 && !Number.isNaN(Date.parse(v)) ? v : null);
+const num = (v) => (Number.isFinite(v) && v >= 0 && v < 1e10 ? v : 0);
+export const safeDriveId = (v) => (typeof v === "string" && DRIVE_ID_RE.test(v) ? v : null);
+export const safeImageMime = (v) => (IMAGE_MIMES.includes(v) ? v : "image/jpeg");
+
+// Trả về bản ghi sạch (chưa có phần `sync`) hoặc null nếu không dùng được.
+export function sanitizeRecord(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  if (typeof raw.id !== "string" || !RECORD_ID_RE.test(raw.id)) return null;
+  const updatedAt = isoOrNull(raw.updatedAt);
+  if (!updatedAt) return null;
+  const f = raw.file && typeof raw.file === "object" ? raw.file : {};
+  const kind = raw.kind === "image" ? "image" : "text";
+  return {
+    id: raw.id, schema: SCHEMA_VERSION, kind,
+    createdAt: isoOrNull(raw.createdAt) || updatedAt, updatedAt, deleted: raw.deleted === true,
+    title: str(raw.title, 500), docType: str(raw.docType, 100) || "Khác", area: raw.area === "personal" ? "personal" : "work",
+    itemCodes: strList(raw.itemCodes), lotNumbers: strList(raw.lotNumbers), subjects: strList(raw.subjects), situations: strList(raw.situations),
+    note: str(raw.note, 20000), tags: strList(raw.tags), docDate: str(raw.docDate, 20),
+    text: str(raw.text, 200000), ocrText: str(raw.ocrText, 200000),
+    ocrStatus: ["none", "pending", "done", "error"].includes(raw.ocrStatus) ? raw.ocrStatus : "none",
+    file: kind === "image" ? { driveId: safeDriveId(f.driveId), thumbDriveId: safeDriveId(f.thumbDriveId), mime: safeImageMime(f.mime), width: num(f.width), height: num(f.height), bytes: num(f.bytes), originalName: str(f.originalName, 255) } : null,
+  };
+}
+
 function blankRecord() {
   const now = new Date().toISOString();
   return {

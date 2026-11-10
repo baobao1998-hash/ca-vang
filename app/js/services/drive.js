@@ -22,6 +22,13 @@ export const setMeta = (key, value) => dbPut("meta", { key, value });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
+// Id file Drive chỉ gồm chữ, số, "_" và "-": chặn id lạ (có "/", "..", "?") chen vào đường dẫn API.
+const DRIVE_ID_OK = /^[0-9A-Za-z_-]{10,128}$/;
+function checkId(id) {
+  if (typeof id !== "string" || !DRIVE_ID_OK.test(id)) throw new DriveError("Mã file Google Drive không hợp lệ.", "other");
+  return id;
+}
+
 async function request(url, init = {}) {
   let authRetried = false;
   for (let attempt = 0; ; attempt++) {
@@ -126,6 +133,7 @@ function multipart(meta, blob) {
 // Tạo mới, hoặc ghi đè nếu có existingId (nếu file cũ đã mất thì tạo lại). -> { id, modifiedTime }
 async function upload(blob, name, parentId, existingId) {
   if (existingId) {
+    checkId(existingId);
     const { body, headers } = multipart({ name }, blob);
     try {
       return await (await request(`${UPLOAD}/files/${existingId}?uploadType=multipart&fields=id,modifiedTime`, { method: "PATCH", headers, body })).json();
@@ -139,7 +147,7 @@ export async function uploadFile(blob, name, parentId, existingId) { return (awa
 export const uploadFileFull = upload;
 
 export async function downloadFile(driveId) {
-  return (await request(`${API}/files/${driveId}?alt=media`)).blob();
+  return (await request(`${API}/files/${checkId(driveId)}?alt=media`)).blob();
 }
 
 export function putJsonFull(name, obj, parentId, existingId) {
@@ -147,7 +155,7 @@ export function putJsonFull(name, obj, parentId, existingId) {
 }
 export async function putJson(name, obj, parentId, existingId) { return (await putJsonFull(name, obj, parentId, existingId)).id; }
 
-export async function getJson(driveId) { return (await request(`${API}/files/${driveId}?alt=media`)).json(); }
+export async function getJson(driveId) { return (await request(`${API}/files/${checkId(driveId)}?alt=media`)).json(); }
 
 // Các file trong thư mục `parentId` có modifiedTime > sinceIso (không truyền = tất cả).
 export function listChanged(parentId, sinceIso) {
@@ -164,11 +172,11 @@ export function findByName(name, parentId) {
 }
 
 export async function deleteFile(driveId) {
-  try { await request(`${API}/files/${driveId}`, { method: "DELETE" }); }
+  try { await request(`${API}/files/${checkId(driveId)}`, { method: "DELETE" }); }
   catch (e) { if (e.code !== "notfound") throw e; }
 }
 
 export async function driveExists(driveId) {
-  try { const j = await (await request(`${API}/files/${driveId}?fields=id,trashed`)).json(); return !j.trashed; }
+  try { const j = await (await request(`${API}/files/${checkId(driveId)}?fields=id,trashed`)).json(); return !j.trashed; }
   catch (e) { if (e.code === "notfound") return false; throw e; }
 }

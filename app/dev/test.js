@@ -3,9 +3,10 @@ import { normalizeVi } from "../js/core/text.js";
 import { newId } from "../js/core/ids.js";
 import { on } from "../js/core/events.js";
 import { useDbName, openDb, closeDb, deleteDatabase, dbPutMany, dbAll, dbClear } from "../js/data/db.js";
-import { saveRecord, getRecord, listRecords, softDelete, restore, purgeOld, getThumbUrl, getFullBlob } from "../js/data/records.js";
+import { saveRecord, getRecord, listRecords, softDelete, restore, purgeOld, getThumbUrl, getFullBlob, sanitizeRecord } from "../js/data/records.js";
 import { initSearch, indexRecord, unindexRecord, search, suggest } from "../js/data/search.js";
 import { getSetting, setSetting } from "../js/data/settings.js";
+import { importJson } from "../js/services/backup.js";
 
 const TEST_DB = "cavang-test";
 const resultsEl = document.getElementById("results");
@@ -118,7 +119,7 @@ async function main() {
     assert(url && url.startsWith("blob:"), "thumb url");
   });
 
-  const N = 5000;
+  const N = Math.min(50000, Number(new URLSearchParams(location.search).get("n")) || 5000); // thêm ?n=10000 vào địa chỉ để thử số lượng khác
   await test(`Tạo ${N} bản ghi giả`, async () => {
     const t0 = performance.now();
     const batch = Array.from({ length: N }, (_, i) => fakeRecord(i));
@@ -219,6 +220,42 @@ async function main() {
     assert((await getRecord(old.id)) === null, "bản cũ vẫn còn");
     assert((await getRecord(recent.id)) !== null, "bản mới xoá bị mất");
     assert((await getRecord(live.id)) !== null, "bản còn dùng bị mất");
+  });
+
+
+  await test("sanitizeRecord: loại id lạ, ép kiểu, cắt chuỗi dài, bỏ trường lạ", () => {
+    const now = new Date().toISOString();
+    assert(sanitizeRecord({ id: "../../etc/passwd", updatedAt: now }) === null, "id có ../ lọt qua");
+    assert(sanitizeRecord({ id: "x'y\"z<script>alert(1)</script>", updatedAt: now }) === null, "id có ký tự lạ lọt qua");
+    assert(sanitizeRecord({ id: "__proto__", updatedAt: now }) === null, "id __proto__");
+    assert(sanitizeRecord({ id: "01JC9X0000000000000000AAAA", updatedAt: "không phải ngày" }) === null, "ngày rác lọt qua");
+    const c = sanitizeRecord({ id: "01JC9X0000000000000000AAAA", updatedAt: now, title: "a".repeat(100000), tags: "không phải mảng", subjects: [1, "ok", { x: 1 }], evil: "<img onerror=1>", file: null, kind: "image",
+      area: "lạ", ocrStatus: "lạ" });
+    assert(c.title.length === 500, "title chưa bị cắt: " + c.title.length);
+    assert(Array.isArray(c.tags) && c.tags.length === 0, "tags");
+    assert(c.subjects.length === 1 && c.subjects[0] === "ok", "subjects");
+    assert(!("evil" in c) && c.area === "work" && c.ocrStatus === "none", "trường lạ/enum");
+    const f = sanitizeRecord({ id: "01JC9X0000000000000000AAAA", updatedAt: now, kind: "image", file: { driveId: "../about", thumbDriveId: "1AbCdEfGhIjKlMn", mime: "text/html" } });
+    assert(f.file.driveId === null && f.file.thumbDriveId === "1AbCdEfGhIjKlMn" && f.file.mime === "image/jpeg", "file: " + JSON.stringify(f.file));
+  });
+
+  await test("importJson: file sao lưu độc hại không làm hỏng dữ liệu", async () => {
+    const now = new Date().toISOString();
+    const bad = { app: "cavang", schema: 2, records: [
+      { id: "../../x", updatedAt: now, title: "id xấu" },
+      { id: "01JC9X0000000000000000BBBB", updatedAt: now, title: "<img src=x onerror=alert(1)>".repeat(20000), subjects: ["<b>x</b>"], file: { driveId: "a/b/c" } },
+      null, 5, "chuỗi", { id: 7 },
+    ], images: { "__proto__": { data: "x" }, "01JC9X0000000000000000BBBB": { type: "text/html", data: "%%%không-phải-base64" } } };
+    const before = (await dbAll("records")).length;
+    const r = await importJson(new File([JSON.stringify(bad)], "x.json"));
+    const after = await dbAll("records");
+    assert(after.length === before + 1, `đúng ra thêm 1 bản ghi, thực tế thêm ${after.length - before}`);
+    const got = after.find((x) => x.id === "01JC9X0000000000000000BBBB");
+    assert(got && got.title.length === 500 && got.kind === "text", "bản ghi nhập chưa được làm sạch");
+    assert(r.skipped >= 5, "bỏ qua " + r.skipped);
+    let threw = false;
+    try { await importJson(new File(["{không phải json"], "x.json")); } catch { threw = true; }
+    assert(threw, "file hỏng phải báo lỗi");
   });
 
   await test("Hàng đợi đồng bộ (outbox) ghi nhận thay đổi", async () => {

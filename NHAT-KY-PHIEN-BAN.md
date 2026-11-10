@@ -2,6 +2,18 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.5.1 · 2026-11-10 · Việc 6.1 — rà soát bảo mật + hiệu năng
+**Bảo mật — đã sửa**
+- (Vừa) Nhập file sao lưu JSON và dữ liệu kéo từ Drive trước đây tin hoàn toàn nội dung. Nay mọi bản ghi đi qua `sanitizeRecord` (data/records.js): chỉ giữ trường đã biết, ép đúng kiểu, cắt độ dài (tiêu đề 500, ghi chú 20.000…), từ chối id lạ (có `../`, dấu nháy, `__proto__`), loại ảnh khác jpeg/png/webp/gif, ảnh hỏng chỉ bỏ ảnh. Giới hạn 200.000 bản ghi/file.
+- (Vừa) Mã file Drive (`driveId`, `thumbDriveId`) lấy từ dữ liệu bên ngoài được chèn vào đường dẫn gọi Drive API → thêm kiểm tra chỉ chữ/số/`_`/`-` (drive.js + sanitizeRecord).
+- (Vừa) CSP siết: bỏ ký tự đại diện `https://*.googleapis.com` (chỉ còn `www.googleapis.com`, `oauth2.googleapis.com`, `generativelanguage.googleapis.com`), thêm `object-src 'none'`, `worker-src 'self'`, `manifest-src 'self'`. Vẫn không có `unsafe-inline`/`unsafe-eval`.
+- (Thấp) Đăng xuất Google nay thu hồi token ở phía Google ngay cả khi công cụ Google chưa tải; token trong localStorage bị xoá như cũ.
+- Nút đổi tên thành "Xoá key Gemini khỏi máy này" (có hỏi lại trước khi xoá).
+**Bảo mật — đã kiểm tra, không có vấn đề**: không còn `innerHTML`/`insertAdjacentHTML`/`eval`/`href` động trong `app/` (mọi chữ qua `textContent`/`h()`); toàn bộ lịch sử git (27 commit, mọi file) không có API key, token, client secret, email cá nhân (chỉ có email ẩn của GitHub); Client ID công khai theo thiết kế. Gemini key gửi qua header `x-goog-api-key`, không nằm trên địa chỉ.
+**Bảo mật — còn lại, chấp nhận**: token Google + key Gemini nằm trong localStorage (script cùng trang đọc được nhưng CSP không cho script lạ chạy; token chỉ sống ~1 giờ, quyền `drive.file`); GitHub Pages không cho đặt header nên không có `frame-ancestors` (chỉ chống nhúng trang, rủi ro thấp); trang `/dev/test.html` vẫn được đưa lên mạng (chỉ động vào kho test riêng, vô hại).
+**Hiệu năng (10.000 bản ghi, máy Windows của chủ, Chrome)**: tìm trung bình 9,1 ms / lần (chậm nhất 31 ms); dựng chỉ mục 0,46–0,7 giây; đọc 10.000 bản ghi 0,13 giây; vỏ app lưu offline 38 file ≈ 380 KB. LỖI TÌM THẤY & SỬA: màn Tìm vẽ cả 10.000 thẻ một lúc (mở app ~6,3 giây) → nay vẽ 60 thẻ/trang + nút "Xem thêm (còn N)" (~3,4 giây trong khung xem thử, gồm cả nạp mã).
+- `app/dev/test.html`: thêm `?n=10000` để đổi số bản ghi; thêm 2 bài kiểm tra (làm sạch bản ghi, nhập file sao lưu độc hại). 17/17 PASS.
+
 ## v0.5.0 (cùng bản) · 2026-11-10 · Việc 4.2 — đăng nhập Google đỡ phiền + đồng bộ 2 máy nhanh hơn
 - NGUYÊN NHÂN hay bị hỏi lại: token Google chỉ nằm trong biến, mất mỗi lần mở lại/tải lại app; hết 1 giờ cũng mất. Trên Android PWA, cửa sổ đăng nhập tự bật (không do người dùng chạm) bị đóng → "popup_closed".
 - Sửa: token + giờ hết hạn được nhớ trong localStorage của thiết bị (quyền chỉ `drive.file`, sống ~1 giờ; đánh đổi bảo mật: mã này đọc được bởi script cùng trang, nhưng CSP chặn script lạ và Google tự vô hiệu sau 1 giờ). Đăng xuất / bị Google từ chối thì xoá ngay.

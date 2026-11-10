@@ -31,7 +31,7 @@ function geminiSection() {
 
   const keyInput = h("input", { class: "field", type: "password", placeholder: getKey() ? "Đã lưu key (dán key mới để thay)" : "Dán Gemini API key…", autocomplete: "off", spellcheck: "false", "aria-label": "Gemini API key" });
   const testBtn = h("button", { type: "button", class: "btn btn-primary", onclick: onTest }, icon("check", 18), "Kiểm tra key");
-  const clearBtn = h("button", { type: "button", class: "btn", onclick: () => { setSetting("geminiKey", null); keyInput.value = ""; keyInput.placeholder = "Dán Gemini API key…"; refreshPill(); say("Đã xoá key khỏi máy này."); } }, "Xoá key");
+  const clearBtn = h("button", { type: "button", class: "btn", onclick: () => { if (!getKey()) { say("Máy này chưa lưu key nào."); return; } if (!confirm("Xoá key Gemini khỏi máy này? (Key vẫn còn ở Google AI Studio, bạn có thể dán lại.)")) return; setSetting("geminiKey", null); keyInput.value = ""; keyInput.placeholder = "Dán Gemini API key…"; refreshPill(); say("Đã xoá key khỏi máy này."); } }, "Xoá key Gemini khỏi máy này");
 
   const cur = getModel();
   const modelSel = h("select", { class: "field", "aria-label": "Model Gemini" },

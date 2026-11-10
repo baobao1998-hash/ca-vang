@@ -120,6 +120,10 @@ export function signOut() {
   const t = token;
   token = null; expiresAt = 0; persistToken();
   setSetting("googleHint", null);
-  try { if (t && window.google?.accounts?.oauth2) window.google.accounts.oauth2.revoke(t, () => {}); } catch { /* bỏ qua */ }
+  // Thu hồi token ở phía Google (tải sẵn công cụ Google thì dùng nó; không thì gọi thẳng).
+  try {
+    if (t && window.google?.accounts?.oauth2) window.google.accounts.oauth2.revoke(t, () => {});
+    else if (t) fetch("https://oauth2.googleapis.com/revoke", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "token=" + encodeURIComponent(t) }).catch(() => {});
+  } catch { /* bỏ qua */ }
   emit("auth:changed", { signedIn: false });
 }
