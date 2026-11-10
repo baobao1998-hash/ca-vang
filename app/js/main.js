@@ -11,6 +11,7 @@ import { initSearch, indexRecord, unindexRecord } from "./data/search.js";
 import { on } from "./core/events.js";
 import { APP_VERSION } from "./core/version.js";
 import { readClipboardImage } from "./services/image.js";
+import { startAutoSync, getStatus, syncNow } from "./services/sync.js";
 
 const view = document.getElementById("view");
 const tabs = document.getElementById("tabs");
@@ -79,6 +80,26 @@ async function start() {
   buildTabs();
   window.addEventListener("hashchange", route);
   route();
+  buildSyncDot();
+  startAutoSync();
+}
+
+// Chấm trạng thái đồng bộ ở góc trên bên phải: xám = chưa kết nối, xanh = đã đồng bộ, xanh dương nhấp nháy = đang đồng bộ, cam = chờ mạng / cần đăng nhập lại, đỏ = lỗi.
+function buildSyncDot() {
+  const dot = h("button", { id: "sync-dot", type: "button", class: "sync-dot", "aria-live": "polite" }, h("span", { class: "sync-dot-core" }));
+  const paint = ({ state, message }) => {
+    dot.dataset.state = state;
+    dot.title = message;
+    dot.setAttribute("aria-label", "Đồng bộ: " + message);
+  };
+  dot.addEventListener("click", () => {
+    const { state } = getStatus();
+    if (state === "off") { location.hash = "#/cai-dat"; return; }
+    if (state !== "syncing") syncNow({ manual: true }).catch((e) => toast(e.message || "Đồng bộ gặp lỗi.", "error", 4000));
+  });
+  document.body.append(dot);
+  on("sync:status", paint);
+  paint(getStatus());
 }
 
 start().catch((err) => { console.error(err); toast("Có lỗi khi khởi động app.", "error"); });

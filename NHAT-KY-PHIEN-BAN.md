@@ -2,6 +2,18 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.4.0 · 2026-11-10 · GĐ4 — Việc 4.1: đồng bộ Google Drive
+- Đăng nhập Google (Google Identity Services, quyền `drive.file`: app chỉ thấy file do chính nó tạo). Token chỉ giữ trong bộ nhớ, không lưu ra ổ đĩa; không dùng client secret. Client ID công khai nằm ở `core/config.js`.
+- Drive: `CaVang/records/<id>.json` (mỗi bằng chứng 1 file), `CaVang/files/YYYY-MM/<id>.jpg` + `<id>.thumb.jpg`, `CaVang/snapshots/index-YYYY-MM-DD.json` (mỗi ngày 1 bản, giữ 30 bản).
+- Đồng bộ: thay đổi vào outbox, đẩy lên khi có mạng; kéo về khi mở app, mỗi 5 phút, khi quay lại tab, khi có mạng lại. Bản `updatedAt` mới hơn thắng. Thiết bị mới: tải snapshot rồi chỉ lấy phần chênh; ảnh nhỏ tải sẵn, ảnh đầy đủ tải khi mở xem (hook `setFullLoader` trong `data/records.js`).
+- Bản ghi "Không gửi AI" vẫn đồng bộ Drive bình thường (Drive là kho riêng của chủ).
+- Giao diện: chấm trạng thái góc trên phải (xám = chưa kết nối, xanh lá = đã đồng bộ, xanh dương nháy = đang đồng bộ, cam = chờ mạng/cần đăng nhập lại, đỏ = lỗi). Cài đặt: Đăng nhập/Đăng xuất Google, Đồng bộ ngay, Xuất sao lưu (JSON, kèm ảnh), Nhập sao lưu.
+- CSP: thêm `accounts.google.com/gsi/*` (script, style, frame, connect) và hash style của công cụ đăng nhập Google. `sw.js`: thêm 4 file mới vào SHELL; request tới Google đi thẳng, không cache.
+- Thêm trường `file.thumbDriveId` (id ảnh nhỏ trên Drive) vào bản ghi ảnh; CHƯA ghi vào `docs/KIEN-TRUC.md` (ngoài phạm vi 4.1) — cần việc riêng.
+- Đã thử THẬT với Google Drive của chủ dự án: đăng nhập, tạo thư mục CaVang, đẩy 3 bằng chứng (3 json, 3 ảnh gốc, 3 ảnh nhỏ), xoá dữ liệu trang rồi đăng nhập lại → 3 bằng chứng về đủ, mở được ảnh đầy đủ.
+- CHƯA thử thật: xuất/nhập sao lưu JSON, mất mạng rồi có mạng lại (outbox), đồng bộ 2 thiết bị cùng lúc / sửa xung đột, snapshot 30 bản, điện thoại Android. Trong khung xem thử của Claude, service worker lỗi gây trang trắng (lỗi cũ của khung xem thử); trình duyệt thường chạy bình thường.
+- Ghi chú: sau khi tải lại trang, token Google mất; chạm đầu tiên vào trang sẽ tự xin lại (hoặc bấm chấm cam / "Đăng nhập lại Google").
+
 ## v0.3.2 · 2026-11-10 · Việc 3.3
 - Thông báo "Đã lưu bằng chứng" trên máy tính không còn che menu Tìm/Thêm/Cài đặt (chuyển xuống đáy màn hình). Điện thoại giữ nguyên (thông báo ở trên, menu ở dưới).
 - Thêm cấu hình xem thử thứ hai `cavang-review` (cổng 5600) để phiên kiểm tra không tranh cổng 5500 với phiên đang code.

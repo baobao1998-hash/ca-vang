@@ -14,7 +14,7 @@ const SHELL = [
   "js/main.js",
   "js/core/config.js", "js/core/events.js", "js/core/ids.js", "js/core/text.js", "js/core/version.js",
   "js/data/db.js", "js/data/records.js", "js/data/search.js", "js/data/settings.js",
-  "js/services/gemini.js", "js/services/image.js",
+  "js/services/auth.js", "js/services/backup.js", "js/services/drive.js", "js/services/gemini.js", "js/services/image.js", "js/services/sync.js",
   "js/ui/common.js", "js/ui/dom.js", "js/ui/ocr-queue.js",
   "js/ui/screen-add.js", "js/ui/screen-detail.js", "js/ui/screen-search.js", "js/ui/screen-settings.js", "js/ui/screen-trash.js",
   "js/ui/components/date-input.js", "js/ui/components/doc-type.js", "js/ui/components/lightbox.js", "js/ui/components/tag-input.js",
@@ -38,6 +38,7 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   const req = e.request;
+  // Chỉ xử lý file của chính app. Mọi request tới Google (Drive, đăng nhập, Gemini) đi thẳng, không cache, không chặn.
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
     fetch(req, { cache: "no-cache" })

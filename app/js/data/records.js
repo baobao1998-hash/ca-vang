@@ -111,7 +111,12 @@ export async function getThumbUrl(id) {
   return url;
 }
 
+// Thiết bị mới chỉ có ảnh nhỏ; ảnh đầy đủ tải từ Drive khi cần xem. sync.js đăng ký hàm tải này.
+let fullLoader = null;
+export function setFullLoader(fn) { fullLoader = fn; }
+
 export async function getFullBlob(id) {
   const b = await dbGet("blobs", id);
-  return b ? b.full || null : null;
+  if (b && b.full) return b.full;
+  return fullLoader ? fullLoader(id) : null;
 }

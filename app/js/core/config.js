@@ -27,3 +27,9 @@ export const DOC_TYPES = ["CO/CQ", "Hoá đơn", "Hợp đồng", "Báo giá", "
 // Lĩnh vực của bằng chứng (schema 2). Bản ghi cũ mặc định "work".
 export const AREAS = [["work", "Công việc"], ["personal", "Cá nhân"]];
 export const AREA_LABEL = Object.fromEntries(AREAS);
+
+// Google Drive (GĐ4). Client ID là thông tin CÔNG KHAI theo thiết kế của Google (không phải bí mật). Tuyệt đối không dùng client secret.
+export const GOOGLE_CLIENT_ID = "52248784861-n8cdav9t9pebijkuecb3pos161l6doha.apps.googleusercontent.com";
+// drive.file: app chỉ thấy các file do chính app tạo, không đọc được file khác trong Drive.
+export const GOOGLE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+export const SYNC_INTERVAL_MS = 5 * 60 * 1000;

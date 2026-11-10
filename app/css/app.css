@@ -235,3 +235,13 @@ mark { background: color-mix(in srgb, var(--accent-2) 55%, transparent); color: 
 .ok-text { color: var(--ok); font-weight: 600; }
 .err-text { color: var(--danger); font-weight: 600; }
 .setting a { color: var(--accent); }
+
+/* Chấm trạng thái đồng bộ Google Drive (góc trên phải) */
+.sync-dot { position: fixed; z-index: 55; top: max(6px, env(safe-area-inset-top)); right: 6px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; background: transparent; cursor: pointer; padding: 0; }
+.sync-dot-core { width: 12px; height: 12px; border-radius: 50%; background: #9aa0a6; box-shadow: 0 0 0 3px color-mix(in srgb, #9aa0a6 25%, transparent); transition: background .2s; }
+.sync-dot[data-state="idle"] .sync-dot-core { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent); }
+.sync-dot[data-state="syncing"] .sync-dot-core { background: #3b82f6; box-shadow: 0 0 0 3px color-mix(in srgb, #3b82f6 25%, transparent); animation: sync-pulse 1s ease-in-out infinite; }
+.sync-dot[data-state="offline"] .sync-dot-core, .sync-dot[data-state="auth"] .sync-dot-core { background: #f5a524; box-shadow: 0 0 0 3px color-mix(in srgb, #f5a524 30%, transparent); }
+.sync-dot[data-state="error"] .sync-dot-core { background: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 25%, transparent); }
+@keyframes sync-pulse { 50% { transform: scale(1.5); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .sync-dot[data-state="syncing"] .sync-dot-core { animation: none; } }
