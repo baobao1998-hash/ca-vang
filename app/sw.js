@@ -42,8 +42,20 @@ self.addEventListener("activate", (e) => {
 const SHARE_CACHE = "cavang-share";
 async function handleShare(req) {
   const debug = { type: req.headers.get("content-type") || "", entries: [], error: "" };
+  debug.len = req.headers.get("content-length") || "";
+  const spare = req.clone(); // để thử đọc theo cách khác nếu formData() lỗi
   try {
-    const fd = await req.formData();
+    let fd;
+    try { fd = await req.formData(); }
+    catch (e1) {
+      // Dự phòng: đọc cả gói thành bộ nhớ rồi tự phân tích lại (một số máy làm hỏng luồng đọc trực tiếp).
+      debug.formDataError = String(e1 && e1.message || e1);
+      try {
+        const buf = await spare.arrayBuffer();
+        debug.bytes = buf.byteLength;
+        fd = await new Response(buf, { headers: { "Content-Type": debug.type } }).formData();
+      } catch (e2) { debug.bufferError = String(e2 && e2.message || e2); throw e1; }
+    }
     const c = await caches.open(SHARE_CACHE);
     for (const k of await c.keys()) await c.delete(k);
     let i = 0;

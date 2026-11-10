@@ -86,7 +86,9 @@ async function takeShared() {
     if (!files.length && !text) {
       console.warn("Chia sẻ trống:", debug);
       // Kèm thông tin kỹ thuật ngắn để chủ dự án chụp màn hình gửi lại khi cần.
-      toast("Không nhận được nội dung chia sẻ. Hãy thử chia sẻ lại hoặc chọn ảnh trong app. [" + (debug || "không có dữ liệu").slice(0, 160) + "]", "error", 12000);
+      let info = "không có dữ liệu";
+      try { const d = JSON.parse(debug); delete d.type; info = JSON.stringify(d); } catch { /* giữ mặc định */ }
+      toast("Không nhận được nội dung chia sẻ. Hãy thử chia sẻ lại hoặc chọn ảnh trong app. [" + info.slice(0, 220) + "]", "error", 15000);
     }
   } catch (err) { console.warn("Không đọc được nội dung chia sẻ:", err); }
 }
