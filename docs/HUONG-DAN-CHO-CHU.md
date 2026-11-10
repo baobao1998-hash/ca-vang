@@ -11,6 +11,20 @@
 - Chạy nhiều phiên cùng lúc **chỉ khi** các việc đều có 🔀 và cùng giai đoạn (ví dụ 1.1, 1.2 và 1.3).
 - Thấy việc cứ báo `🔒 ĐANG LÀM` mà không có phiên nào chạy (phiên bị tắt giữa chừng) → mở phiên mới, nói: *"Việc X bị bỏ dở, kiểm tra git status và làm tiếp theo CLAUDE.md"*.
 
+## Link app và cài lên điện thoại
+- **Link app:** https://baobao1998-hash.github.io/ca-vang/ (dùng được trên máy tính và điện thoại).
+- **Mã nguồn (GitHub):** https://github.com/baobao1998-hash/ca-vang
+- **Cài lên Android — BẮT BUỘC dùng Chrome** (không dùng Samsung Internet, vì không chọn được ảnh từ Thư viện):
+  1. Mở Chrome, vào link app → menu ⋮ → *Thêm vào màn hình chính* → *Cài đặt*.
+  2. Mở app từ biểu tượng, vào *Cài đặt*: dán key Gemini + bấm *Đăng nhập Google*. (Key chỉ lưu trên từng thiết bị nên mỗi máy phải dán một lần.)
+- **Gửi ảnh vào app từ Thư viện:** chọn ảnh → *Chia sẻ* → *Cá Vàng*.
+- **Đồng bộ:** app chỉ cập nhật khi đang mở hoặc vừa mở lại (app web không chạy ngầm được như OneDrive). Muốn thấy ngay thì bấm vào app / chấm trạng thái / *Đồng bộ ngay*.
+
+## Cập nhật app lên bản mới
+- Khi Claude làm xong một việc, mã tự lên mạng sau khoảng 2 phút (qua GitHub).
+- Trong app: *Cài đặt* → *Kiểm tra bản mới* → *Tải lại bản mới*. Nếu vẫn thấy bản cũ, đóng hẳn app (vuốt tắt) rồi mở lại.
+- Nếu một tính năng Android chưa chạy, kiểm tra app có cài bằng Chrome không.
+
 ## Khi app bị hỏng sau một lần cập nhật
 Mở phiên mới, gõ:
 > Đọc CLAUDE.md mục 5. App bị lỗi sau bản vX.Y.Z (mô tả lỗi...). Liệt kê các phiên bản và giúp tôi quay về bản trước đó, không xoá lịch sử.
@@ -27,7 +41,7 @@ Mọi phiên bản đều được giữ, nên quay lại bản nào cũng đư�
 |---|---|---|
 | GĐ3 | Tạo Gemini API key ở Google AI Studio | Miễn phí |
 | GĐ4 | Tạo Google Cloud project + OAuth Client ID | Miễn phí, không cần thẻ |
-| GĐ5 | Tạo tài khoản GitHub | Miễn phí |
+| GĐ5 | Tạo tài khoản GitHub (đã xong) | Miễn phí |
 
 ## Bảo mật: 3 điều cần nhớ
 1. **Không dán API key vào khung chat với Claude.** Key chỉ nhập vào màn Cài đặt của app.

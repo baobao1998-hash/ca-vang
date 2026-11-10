@@ -37,13 +37,13 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 |---|---|---|---|
 | 4.T | 👤 **Việc của chủ dự án:** tạo Google Cloud project + OAuth Client ID (phiên 4.1 sẽ hướng dẫn từng bước) | — | ✅ XONG |
 | 4.1 | auth.js + drive.js + sync.js + backup.js (snapshot ngày), trạng thái đồng bộ trong UI | `app/js/services/auth.js`, `drive.js`, `sync.js`, `backup.js`, `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/js/core/config.js`, `app/index.html` (chỉ CSP), `app/sw.js` (chỉ SHELL + không chặn request Google), `app/css/*` (chấm trạng thái), `app/js/data/records.js` (chỉ hook tải ảnh đầy đủ từ Drive) | ✅ XONG — v0.4.0 |
-| 4.2 | Sửa đăng nhập Google hay bị hỏi lại (nhớ token tới hết hạn, xin lại khi chạm, báo lỗi dễ hiểu) + đồng bộ 2 máy nhanh hơn (kéo khi mở/quay lại, nhịp ngắn khi đang mở) | `app/js/services/auth.js`, `app/js/services/sync.js`, `app/js/ui/screen-settings.js`, `docs/KIEN-TRUC.md` (dòng auth) | ✅ XONG — chờ tăng version (5.1 chốt) |
+| 4.2 | Sửa đăng nhập Google hay bị hỏi lại (nhớ token tới hết hạn, xin lại khi chạm, báo lỗi dễ hiểu) + đồng bộ 2 máy nhanh hơn (kéo khi mở/quay lại, nhịp ngắn khi đang mở) | `app/js/services/auth.js`, `app/js/services/sync.js`, `app/js/ui/screen-settings.js`, `docs/KIEN-TRUC.md` (dòng auth) | ✅ XONG — v0.5.0 |
 
 ## GĐ5 — Đưa lên mạng + cài trên Android → v0.5.0
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
-| 5.T | 👤 **Việc của chủ dự án:** tạo tài khoản GitHub | — | ⬜ CHƯA LÀM |
-| 5.1 | GitHub repo + GitHub Actions deploy `app/` lên Pages, nút "Chia sẻ → Cá Vàng" trên Android (share_target), cập nhật Client ID/referrer | `.github/*`, `app/manifest.webmanifest`, `app/sw.js`, `app/index.html`, `app/js/main.js`, `app/js/ui/screen-add.js`, `app/js/core/config.js`, `docs/HUONG-DAN-CHO-CHU.md` | 🔒 ĐANG LÀM — 2026-11-10 |
+| 5.T | 👤 **Việc của chủ dự án:** tạo tài khoản GitHub | — | ✅ XONG |
+| 5.1 | GitHub repo + GitHub Actions deploy `app/` lên Pages, nút "Chia sẻ → Cá Vàng" trên Android (share_target), cập nhật Client ID/referrer | `.github/*`, `app/manifest.webmanifest`, `app/sw.js`, `app/index.html`, `app/js/main.js`, `app/js/ui/screen-add.js`, `app/js/core/config.js`, `docs/HUONG-DAN-CHO-CHU.md` | ✅ XONG — v0.5.0 |
 
 ## GĐ6 — Hoàn thiện → v1.0.0
 | Mã | Việc | File được sửa | Trạng thái |

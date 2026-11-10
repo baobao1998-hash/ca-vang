@@ -2,7 +2,7 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
-## (chưa tăng phiên bản) · 2026-11-10 · Việc 4.2 — đăng nhập Google đỡ phiền + đồng bộ 2 máy nhanh hơn
+## v0.5.0 (cùng bản) · 2026-11-10 · Việc 4.2 — đăng nhập Google đỡ phiền + đồng bộ 2 máy nhanh hơn
 - NGUYÊN NHÂN hay bị hỏi lại: token Google chỉ nằm trong biến, mất mỗi lần mở lại/tải lại app; hết 1 giờ cũng mất. Trên Android PWA, cửa sổ đăng nhập tự bật (không do người dùng chạm) bị đóng → "popup_closed".
 - Sửa: token + giờ hết hạn được nhớ trong localStorage của thiết bị (quyền chỉ `drive.file`, sống ~1 giờ; đánh đổi bảo mật: mã này đọc được bởi script cùng trang, nhưng CSP chặn script lạ và Google tự vô hiệu sau 1 giờ). Đăng xuất / bị Google từ chối thì xoá ngay.
 - Không còn tự bật cửa sổ đăng nhập ở nền: chỉ xin lại khi người dùng chạm vào app (mỗi lần chạm nếu token sắp hết hạn/đã mất, hạ nhiệt 30 giây) hoặc bấm chấm trạng thái/nút. Công cụ đăng nhập Google được tải sẵn để cửa sổ mở kịp lúc chạm. Thông báo lỗi tiếng Việt rõ hơn.
@@ -10,10 +10,14 @@ Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm t�
 - ĐÃ thử thật (Chrome, localhost): token nhớ qua tải lại trang; token bị Google từ chối (401) thì xoá, hiện "cần đăng nhập lại", không bật cửa sổ. CHƯA thử: đăng nhập Google thật, xin lại yên lặng, Android S25+, 2 thiết bị.
 
 ## v0.5.0 · 2026-11-10 · GĐ5 — Việc 5.1: đưa lên mạng + cài trên Android
-- GitHub Actions (`.github/workflows/pages.yml`): mỗi lần đẩy lên nhánh `main` tự đưa thư mục `app/` lên GitHub Pages.
-- Mọi đường dẫn trong app đã là tương đối nên chạy đúng dưới `https://<user>.github.io/<repo>/` (manifest `start_url`/`scope` = `./`, service worker đăng ký tương đối).
-- `share_target` (POST multipart: ảnh + chữ) trong manifest; `sw.js` nhận, cất tạm vào cache `cavang-share`, chuyển về `./?shared=1#/them`; `main.js` lấy ra, màn Thêm mở sẵn ảnh/chữ và Gemini tự đọc. `sw.js` giờ chỉ xoá cache vỏ app cũ (`cavang-shell-v*`), không đụng cache chia sẻ.
-- ĐÃ thử thật (Chrome máy tính, localhost): giả lập chia sẻ 1 ảnh + 1 đoạn chữ qua POST → vào đúng màn Thêm, cache dọn sạch.
+- App chạy trên mạng: https://baobao1998-hash.github.io/ca-vang/ (GitHub Pages, kho công khai `baobao1998-hash/ca-vang`). GitHub Actions (`.github/workflows/pages.yml`) tự đưa thư mục `app/` lên mạng mỗi lần đẩy lên `main`.
+- Lịch sử commit đã đổi email tác giả sang email ẩn của GitHub trước khi đẩy lên (chủ đồng ý); nhánh sao lưu `sao-luu-truoc-doi-email` chỉ nằm trên máy.
+- Mọi đường dẫn trong app là tương đối nên chạy đúng dưới `/ca-vang/` (manifest `start_url`/`scope` = `./`, service worker đăng ký tương đối).
+- `share_target` (POST multipart: ảnh + chữ): `sw.js` nhận, cất vào cache `cavang-share` (có đường đọc dự phòng + thông tin chẩn đoán khi lỗi), chuyển về `./?shared=1#/them`; `main.js` lấy ra, màn Thêm mở sẵn ảnh/chữ, Gemini tự đọc. `sw.js` chỉ xoá cache vỏ app cũ (`cavang-shell-v*`).
+- Chủ đã thêm `https://baobao1998-hash.github.io` vào Authorized JavaScript origins của OAuth Client ID. Giới hạn Gemini key theo tên miền: BỎ QUA (tài khoản chủ không có mục này); key vẫn chỉ lưu trên từng thiết bị.
+- ĐÃ thử thật: trang Pages trên Chrome máy tính; đăng nhập Google thật trên trang mới (tải về 3, đẩy lên 3); cài trên Samsung S25+ bằng Chrome; chủ báo đã thử đủ các bài: chia sẻ ảnh từ Thư viện, chụp ảnh, chọn ảnh, đồng bộ máy tính ↔ điện thoại. Đồng bộ trên máy tính hơi chậm (tab nền chỉ kéo về khi bấm vào tab).
+- LƯU Ý: cài bằng Samsung Internet thì không chọn được ảnh từ Thư viện và chia sẻ ảnh bị lỗi → phải cài bằng Chrome.
+- CHƯA kiểm chứng riêng: mất mạng rồi có mạng lại (outbox), nút "Tải lại bản mới" sau khi deploy, xuất sao lưu JSON (chủ nói đã thử xong nhưng chưa ghi lại kết quả từng bài).
 
 ## v0.4.0 · 2026-11-10 · GĐ4 — Việc 4.1: đồng bộ Google Drive
 - Đăng nhập Google (Google Identity Services, quyền `drive.file`: app chỉ thấy file do chính nó tạo). Token chỉ giữ trong bộ nhớ, không lưu ra ổ đĩa; không dùng client secret. Client ID công khai nằm ở `core/config.js`.
