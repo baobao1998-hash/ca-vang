@@ -2,6 +2,9 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.5.4 · 2026-11-10 · Việc 6.5
+- Điện thoại: thông báo ("Đã lưu bằng chứng"...) không còn che nút quay lại/tiêu đề ở trên — nay hiện ngay trên thanh menu dưới, nhỏ gọn hơn. Máy tính giữ nguyên (đáy màn hình). Đã thử khổ 375px trong khung xem thử.
+
 ## v0.5.3 · 2026-11-10 · Việc 6.4 — sửa lỗi app kẹt ở bản cũ
 - **Nguyên nhân (đã dựng lại được):** khi tải lại trang, Chrome lấy file code (JS/CSS) từ bộ nhớ tạm của chính nó mà KHÔNG hỏi service worker; tên file không đổi giữa các phiên bản nên máy cứ chạy bản cũ (chủ thấy mãi v0.5.1 dù trên mạng đã là v0.5.2). Thêm lỗi phụ: nút "Tải lại bản mới" LUÔN hiện (thiếu CSS cho thuộc tính `hidden`), bấm vào chỉ tải lại trang nên vẫn bản cũ.
 - **Sửa:** khi đưa lên mạng, GitHub Actions chạy `scripts/stamp_version.py` gắn `?v=<phiên bản>` vào mọi đường dẫn file code (import JS, CSS, main.js, sw-outbox.js) → mỗi bản có địa chỉ file mới, trình duyệt buộc tải mới. Code gốc trong kho không đổi; chạy thử trên máy (localhost) không gắn số → khi thử cục bộ dùng Ctrl+Shift+R.
