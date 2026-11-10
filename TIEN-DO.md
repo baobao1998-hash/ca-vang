@@ -16,7 +16,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
 | 1.1 🔀 | Khung PWA + giao diện Liquid Glass 4 màn (Tìm, Thêm, Chi tiết, Cài đặt) với dữ liệu giả | `app/index.html`, `app/manifest.webmanifest`, `app/sw.js`, `app/icons/*`, `app/css/*`, `app/js/main.js`, `app/js/ui/*` | ✅ XONG (việc 1.1, 2026-11-10) — chờ phiên 1.3 chốt v0.1.0 |
-| 1.2 🔀 | Lõi dữ liệu: core/*, IndexedDB, records, search (MiniSearch, bỏ dấu), settings + trang test `app/dev/test.html` | `app/js/core/*` (trừ version.js), `app/js/data/*`, `app/vendor/*`, `app/dev/*` | ⬜ CHƯA LÀM |
+| 1.2 🔀 | Lõi dữ liệu: core/*, IndexedDB, records, search (MiniSearch, bỏ dấu), settings + trang test `app/dev/test.html` | `app/js/core/*` (trừ version.js), `app/js/data/*`, `app/vendor/*`, `app/dev/*` | 🔒 ĐANG LÀM — 2026-11-10 |
 | 1.3 🔀 | Xử lý ảnh: nén, thumbnail, đọc ảnh từ dán/chọn/chụp | `app/js/services/image.js` | ⬜ CHƯA LÀM |
 
 ## GĐ2 — Ghép nối: app chạy thật trên 1 máy (offline) → v0.2.0
