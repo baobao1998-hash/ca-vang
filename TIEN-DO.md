@@ -27,7 +27,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 ## GĐ3 — Đọc chữ trên ảnh bằng Gemini → v0.3.0
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
-| 3.1 | `services/gemini.js` + màn Cài đặt nhập/kiểm tra key + gợi ý thẻ ở màn Thêm + hàng đợi OCR "pending" | `app/js/services/gemini.js`, `app/js/ui/screen-add.js`, `app/js/ui/screen-settings.js`, `app/js/ui/components/*` | ⬜ CHƯA LÀM |
+| 3.1 | `services/gemini.js` + màn Cài đặt nhập/kiểm tra key + gợi ý thẻ ở màn Thêm + hàng đợi OCR "pending" | `app/js/services/gemini.js`, `app/js/ui/*`, `app/css/*`, `app/index.html` (CSP), `app/js/core/config.js` (danh mục), `docs/KIEN-TRUC.md` (dòng danh mục) | 🔒 ĐANG LÀM — 2026-11-10 |
 | 3.T | 👤 **Việc của chủ dự án:** tạo Gemini API key (có hướng dẫn) | — | ⬜ CHƯA LÀM |
 
 ## GĐ4 — Đồng bộ Google Drive → v0.4.0
