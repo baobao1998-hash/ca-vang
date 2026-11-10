@@ -49,6 +49,8 @@ Số phiên bản nằm duy nhất ở `app/js/core/version.js` và phải khớ
 - Mỗi module một trách nhiệm, chỉ giao tiếp qua các hàm export đã ghi trong `docs/KIEN-TRUC.md` mục "Hợp đồng module".
 - Mọi thao tác mạng phải có xử lý lỗi + thông báo tiếng Việt dễ hiểu cho người dùng.
 - Giao diện phải dùng tốt trên điện thoại (màn 360px) và máy tính.
+- **Thêm/xoá/đổi tên file trong `app/`** → bắt buộc cập nhật danh sách `SHELL` trong `app/sw.js` (được phép sửa riêng dòng đó dù ngoài phạm vi). File thiếu trong danh sách = bản mới không cài được trên máy người dùng.
+- **Kiểm thử giả lập** (mock fetch, dữ liệu giả tiêm vào trình duyệt) phải gỡ bỏ và tải lại tab trước khi bàn giao, và nói rõ cho chủ dự án biết phần nào đã thử thật, phần nào mới giả lập.
 - Chạy thử cục bộ: `python -m http.server 5500 -d app` hoặc dùng preview của Claude (cấu hình trong `.claude/launch.json`).
 
 ## 5. Khi chủ dự án nói "quay về bản cũ"
