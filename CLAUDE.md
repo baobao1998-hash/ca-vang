@@ -27,6 +27,7 @@ Chủ dự án là người **không rành kỹ thuật** → luôn giải thíc
    - Không bao giờ dùng `git add -A` / `git add .`.
    - **Việc song song (🔀):** KHÔNG sửa `version.js`, KHÔNG tag; commit ghi `(viec 1.2)`. Khi tất cả việc 🔀 của giai đoạn đã ✅, phiên cuối cùng (hoặc phiên "chốt giai đoạn") mới tăng version + tag + ghi nhật ký tổng.
    - Nếu `git commit` báo `index.lock` → đợi 5 giây rồi thử lại, không xoá file lock khi phiên khác đang chạy.
+   - **Đưa lên mạng (từ v0.5.0):** sau khi tag, chạy `git push origin main --tags`. GitHub Actions tự deploy `app/` lên https://baobao1998-hash.github.io/ca-vang/ sau ~2 phút. Kho này CÔNG KHAI → kiểm tra lần cuối không có key/token/email cá nhân trong file trước khi push. Không push nhánh `sao-luu-*`.
 8. Báo chủ dự án bằng tiếng Việt: đã làm gì, thử thế nào, phiên bản mới là gì, còn gì chưa xong.
 
 ## 2. Điều CẤM
