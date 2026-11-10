@@ -48,7 +48,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 ## GĐ6 — Hoàn thiện → v1.0.0
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
-| 6.1 | Rà soát bảo mật (CSP, XSS, key) + hiệu năng tìm kiếm 10.000 bản ghi | toàn bộ (chỉ sửa lỗi) | ⬜ CHƯA LÀM |
+| 6.1 | Rà soát bảo mật (CSP, XSS, key) + hiệu năng tìm kiếm 10.000 bản ghi | toàn bộ (chỉ sửa lỗi) | 🔒 ĐANG LÀM — 2026-11-10 |
 | 6.2 | Xuất "hồ sơ trình bày": chọn nhiều bằng chứng → in/xuất PDF kèm ghi chú | `app/js/ui/*`, `app/css/*` | ⬜ CHƯA LÀM |
 
 ---
