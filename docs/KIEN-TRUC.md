@@ -188,7 +188,8 @@ analyzeImage(blob) -> Promise<{ocrText,title,docType,area,itemCodes,lotNumbers,s
 analyzeText(text) -> Promise<cùng dạng, ocrText="">
 testKey(key) -> Promise<boolean>
 // services/auth.js
-signIn(), signOut(), getToken() -> Promise<string>, isSignedIn() -> boolean
+signIn(), signOut(), getToken({interactive}) -> Promise<string>, isSignedIn() -> boolean, needsRenewal(), renewQuietly()
+// Token Google (~1 giờ, scope drive.file) được nhớ trong localStorage tới khi hết hạn; hết hạn thì xin lại khi người dùng chạm (không tự bật cửa sổ ở nền).
 // services/drive.js
 ensureFolders() -> {root, files, records, snapshots}
 uploadFile(blob, name, parentId) -> driveId ; downloadFile(driveId) -> Blob

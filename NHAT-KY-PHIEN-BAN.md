@@ -2,6 +2,13 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## (chưa tăng phiên bản) · 2026-11-10 · Việc 4.2 — đăng nhập Google đỡ phiền + đồng bộ 2 máy nhanh hơn
+- NGUYÊN NHÂN hay bị hỏi lại: token Google chỉ nằm trong biến, mất mỗi lần mở lại/tải lại app; hết 1 giờ cũng mất. Trên Android PWA, cửa sổ đăng nhập tự bật (không do người dùng chạm) bị đóng → "popup_closed".
+- Sửa: token + giờ hết hạn được nhớ trong localStorage của thiết bị (quyền chỉ `drive.file`, sống ~1 giờ; đánh đổi bảo mật: mã này đọc được bởi script cùng trang, nhưng CSP chặn script lạ và Google tự vô hiệu sau 1 giờ). Đăng xuất / bị Google từ chối thì xoá ngay.
+- Không còn tự bật cửa sổ đăng nhập ở nền: chỉ xin lại khi người dùng chạm vào app (mỗi lần chạm nếu token sắp hết hạn/đã mất, hạ nhiệt 30 giây) hoặc bấm chấm trạng thái/nút. Công cụ đăng nhập Google được tải sẵn để cửa sổ mở kịp lúc chạm. Thông báo lỗi tiếng Việt rõ hơn.
+- Đồng bộ: kéo thay đổi khi mở app, quay lại tab/cửa sổ (focus, visibilitychange, pageshow), và mỗi 60 giây khi app đang mở (trước là 5 phút). PWA KHÔNG đồng bộ nền khi app đóng được (khác OneDrive); chỉ cập nhật khi app đang mở hoặc vừa mở.
+- ĐÃ thử thật (Chrome, localhost): token nhớ qua tải lại trang; token bị Google từ chối (401) thì xoá, hiện "cần đăng nhập lại", không bật cửa sổ. CHƯA thử: đăng nhập Google thật, xin lại yên lặng, Android S25+, 2 thiết bị.
+
 ## v0.5.0 · 2026-11-10 · GĐ5 — Việc 5.1: đưa lên mạng + cài trên Android
 - GitHub Actions (`.github/workflows/pages.yml`): mỗi lần đẩy lên nhánh `main` tự đưa thư mục `app/` lên GitHub Pages.
 - Mọi đường dẫn trong app đã là tương đối nên chạy đúng dưới `https://<user>.github.io/<repo>/` (manifest `start_url`/`scope` = `./`, service worker đăng ký tương đối).

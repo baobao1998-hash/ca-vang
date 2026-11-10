@@ -1,10 +1,10 @@
 // Đồng bộ IndexedDB ⇄ Google Drive. Mỗi bản ghi = 1 file records/<id>.json; ảnh ở files/YYYY-MM/<id>.jpg (+ <id>.thumb.jpg).
 // Bản có updatedAt mới hơn thắng. Thay đổi trên máy đi qua "outbox"; mất mạng thì giữ lại và đẩy sau.
-import { SYNC_INTERVAL_MS } from "../core/config.js";
+const POLL_MS = 60 * 1000; // nhịp kiểm tra khi app đang mở
 import { on, emit } from "../core/events.js";
 import { dbGet, dbPut, dbDelete, dbAll } from "../data/db.js";
 import { migrateRecord, setFullLoader } from "../data/records.js";
-import { isSignedIn, wasSignedIn, getToken, AuthError } from "./auth.js";
+import { isSignedIn, wasSignedIn, getToken, renewQuietly, preloadGis, needsRenewal, AuthError } from "./auth.js";
 import {
   ensureFolders, forgetFolders, monthFolder, uploadFileFull, downloadFile, putJsonFull, getJson,
   listChanged, findByName, deleteFile, driveExists, getMeta, setMeta,
@@ -165,11 +165,11 @@ async function doSync(manual) {
   if (!navigator.onLine) { setStatus("offline", "Đang mất mạng — thay đổi sẽ tự đẩy lên khi có mạng."); return { pushed: 0, pulled: 0 }; }
   if (!isSignedIn()) {
     if (!manual) {
-      if (wasSignedIn()) setStatus("auth", "Cần đăng nhập lại Google — bấm vào đây.");
+      if (wasSignedIn()) setStatus("auth", "Cần đăng nhập lại Google — chạm vào chấm trạng thái hoặc nút Đăng nhập lại.");
       else setStatus("off", "Chưa kết nối Google Drive");
       return { pushed: 0, pulled: 0 };
     }
-    try { await getToken(); } catch (e) { setStatus("auth", e.message); throw e; }
+    try { await getToken({ interactive: true }); } catch (e) { setStatus("auth", e.message); throw e; }
   }
   setStatus("syncing", "Đang đồng bộ…");
   let pushed = 0, pulled = 0, failed = 0, lastErr = null;
@@ -240,16 +240,22 @@ export function startAutoSync() {
   document.addEventListener("visibilitychange", onVisible);
   window.addEventListener("online", onOnline);
   window.addEventListener("offline", onOffline);
-  // Token Google chỉ nằm trong bộ nhớ nên mất khi tải lại trang; lần chạm đầu tiên sẽ xin lại (không phải gõ mật khẩu).
+  // Token hết hạn thì xin lại vào lúc người dùng chạm (không phải gõ mật khẩu), rồi đồng bộ luôn.
   const onGesture = () => {
-    if (!wasSignedIn() || isSignedIn()) return;
-    syncNow({ manual: true }).catch(() => {});
+    if (!wasSignedIn() || !needsRenewal()) return;
+    renewQuietly().then((ok) => { if (ok) schedule(300); });
   };
-  document.addEventListener("click", onGesture, { capture: true, once: true });
-  interval = setInterval(() => schedule(0), SYNC_INTERVAL_MS);
-  offs.push(() => { document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("online", onOnline); window.removeEventListener("offline", onOffline); document.removeEventListener("click", onGesture, true); });
-  if (wasSignedIn()) setStatus("auth", "Cần đăng nhập lại Google — bấm vào đây.");
-  else setStatus("off", "Chưa kết nối Google Drive");
+  document.addEventListener("click", onGesture, { capture: true });
+  // Quay lại app / cửa sổ được chú ý → kéo thay đổi từ máy kia ngay.
+  const onFocus = () => schedule(300);
+  window.addEventListener("focus", onFocus);
+  window.addEventListener("pageshow", onFocus);
+  // Đang mở app thì kiểm tra máy kia mỗi 60 giây (app đóng thì PWA không chạy nền được).
+  interval = setInterval(() => { if (document.visibilityState === "visible") schedule(0); }, POLL_MS);
+  offs.push(() => { document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("online", onOnline); window.removeEventListener("offline", onOffline); document.removeEventListener("click", onGesture, true); window.removeEventListener("focus", onFocus); window.removeEventListener("pageshow", onFocus); });
+  if (wasSignedIn()) preloadGis();
+  if (wasSignedIn() && !isSignedIn()) setStatus("auth", "Cần đăng nhập lại Google — chạm vào chấm trạng thái hoặc bất kỳ đâu trong app.");
+  else if (!wasSignedIn()) setStatus("off", "Chưa kết nối Google Drive");
   schedule(800);
 }
 
