@@ -2,6 +2,16 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v1.0.0 · 2026-11-10 · Chốt bản hoàn chỉnh đầu tiên 🎉
+Cá Vàng làm được:
+- **Lưu mọi bằng chứng** (công việc + cá nhân): chụp ảnh, chọn ảnh, kéo thả/Ctrl+V, dán văn bản, hoặc "Chia sẻ → Cá Vàng" từ Thư viện Android.
+- **Gemini tự đọc ảnh và tự điền**: tiêu đề, loại giấy tờ, ngày, mã hàng, số lô, đối tượng, tình huống, lĩnh vực; sai thì sửa tay; có công tắc "Không gửi AI".
+- **Tìm tức thì** trên máy (gõ không dấu, gõ sai nhẹ, mã hàng bỏ gạch/chấm), lọc theo loại/đối tượng/thời gian/lĩnh vực; thùng rác 30 ngày.
+- **Đồng bộ Google Drive** (thư mục CaVang, app chỉ thấy file của chính nó), snapshot hằng ngày giữ 30 bản, xuất/nhập sao lưu JSON; tải sẵn ảnh khi có Wi‑Fi; đẩy nốt lên Drive khi đã tắt app.
+- **Hồ sơ trình bày**: chọn nhiều bằng chứng → in / lưu PDF A4.
+- **Cài như app** trên Android (Chrome) và máy tính; chạy offline; tự báo và cập nhật bản mới.
+Giới hạn đã biết: chỉ dùng Chrome (Samsung Internet lỗi chia sẻ); đồng bộ từ máy khác về chỉ chạy khi app đang mở; Gemini gói miễn phí có hạn mức/ngày.
+
 ## v0.6.0 · 2026-11-10 · Việc 6.2 — hồ sơ trình bày (in / lưu PDF)
 - **Màn Tìm:** nút “Chọn nhiều” (góc trên) hoặc **nhấn giữ một thẻ** trên điện thoại → tick nhiều bằng chứng; thanh dưới hiện “Đã chọn N”, “Chọn tất cả N kết quả đang lọc”, “Bỏ chọn”, “Tạo hồ sơ (N)”.
 - **Màn Hồ sơ (`#/ho-so`):** ô Tiêu đề (tự gợi ý từ tình huống/đối tượng chung), ô Ghi chú trình bày, đổi thứ tự bằng nút lên/xuống, bỏ từng mục (×), công tắc “Kèm chữ đọc từ ảnh”. Nút “Xem trước” và “Lưu PDF / In”.

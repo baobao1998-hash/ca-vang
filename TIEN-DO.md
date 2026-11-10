@@ -45,7 +45,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 | 5.T | 👤 **Việc của chủ dự án:** tạo tài khoản GitHub | — | ✅ XONG |
 | 5.1 | GitHub repo + GitHub Actions deploy `app/` lên Pages, nút "Chia sẻ → Cá Vàng" trên Android (share_target), cập nhật Client ID/referrer | `.github/*`, `app/manifest.webmanifest`, `app/sw.js`, `app/index.html`, `app/js/main.js`, `app/js/ui/screen-add.js`, `app/js/core/config.js`, `docs/HUONG-DAN-CHO-CHU.md` | ✅ XONG — v0.5.0 |
 
-## GĐ6 — Hoàn thiện → v1.0.0
+## GĐ6 — Hoàn thiện → v1.0.0 ✅ (chốt 2026-11-10)
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
 | 6.1 | Rà soát bảo mật (CSP, XSS, key) + hiệu năng tìm kiếm 10.000 bản ghi | toàn bộ (chỉ sửa lỗi) | ✅ XONG — v0.5.1 (Phần C: xem nhật ký) |
@@ -53,6 +53,11 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 | 6.3 | Tải sẵn ảnh đầy đủ khi có Wi-Fi (công tắc) + Background Sync một lần cho outbox khi app đã đóng (không làm Periodic Sync) + đo tốc độ mở app | `app/js/services/prefetch.js` (mới), `app/js/services/sync.js`, `auth.js`, `drive.js`, `app/js/data/records.js`, `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/sw.js`, `app/css/*`, `docs/KIEN-TRUC.md` | ✅ XONG — v0.5.2 |
 | 6.4 | Sửa cập nhật app: nút "Tải lại bản mới" luôn hiện (thiếu CSS `[hidden]`), so phiên bản với máy chủ, cập nhật cưỡng bức + báo có bản mới khi mở app | `app/css/glass.css`, `app/js/ui/updater.js` (mới), `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/sw.js`, `scripts/stamp_version.py` (mới), `.github/workflows/pages.yml` | ✅ XONG — v0.5.3 |
 | 6.5 | Điện thoại: thông báo "Đã lưu" che nút quay lại → chuyển xuống ngay trên thanh menu dưới, gọn hơn | `app/css/app.css` | ✅ XONG — v0.5.4 |
+
+## Sau v1.0.0 — việc mới
+| Mã | Việc | File được sửa | Trạng thái |
+|---|---|---|---|
+| 7.x | (thêm việc mới ở đây, mỗi việc một phiên; sửa lỗi nhỏ tăng PATCH 1.0.x, tính năng mới tăng MINOR 1.x.0) | | |
 
 ---
 ## Ý tưởng để sau (chưa duyệt)
