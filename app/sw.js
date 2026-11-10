@@ -8,13 +8,15 @@ const cacheName = queryVersion
   ? Promise.resolve("cavang-shell-v" + queryVersion)
   : fetch("js/core/version.js", { cache: "no-store" }).then((r) => r.text())
       .then((t) => "cavang-shell-v" + (/APP_VERSION = "([^"]+)"/.exec(t) || [])[1]).catch(() => "cavang-shell-vdev");
+// Đồng bộ nền một lần (sự kiện "sync") — xem sw-outbox.js. Nạp lỗi thì chỉ mất tính năng này, không ảnh hưởng chạy offline.
+try { importScripts("sw-outbox.js"); } catch (err) { console.warn("Không nạp được sw-outbox.js:", err); }
 const SHELL = [
-  "./", "index.html", "manifest.webmanifest",
+  "./", "index.html", "manifest.webmanifest", "sw-outbox.js",
   "css/tokens.css", "css/glass.css", "css/app.css",
   "js/main.js",
   "js/core/config.js", "js/core/events.js", "js/core/ids.js", "js/core/text.js", "js/core/version.js",
   "js/data/db.js", "js/data/records.js", "js/data/search.js", "js/data/settings.js",
-  "js/services/auth.js", "js/services/backup.js", "js/services/drive.js", "js/services/gemini.js", "js/services/image.js", "js/services/sync.js",
+  "js/services/auth.js", "js/services/backup.js", "js/services/drive.js", "js/services/gemini.js", "js/services/image.js", "js/services/prefetch.js", "js/services/sync.js",
   "js/ui/common.js", "js/ui/dom.js", "js/ui/ocr-queue.js",
   "js/ui/screen-add.js", "js/ui/screen-detail.js", "js/ui/screen-search.js", "js/ui/screen-settings.js", "js/ui/screen-trash.js",
   "js/ui/components/date-input.js", "js/ui/components/doc-type.js", "js/ui/components/lightbox.js", "js/ui/components/tag-input.js",
@@ -24,6 +26,11 @@ const SHELL = [
 
 self.addEventListener("install", (e) => {
   e.waitUntil(cacheName.then((n) => caches.open(n)).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: "reload" })))));
+});
+
+// Background Sync một lần: có mạng trở lại → đẩy nốt outbox lên Drive (app có thể đã đóng).
+self.addEventListener("sync", (e) => {
+  if (e.tag === "cavang-outbox" && self.cavangRunOutbox) e.waitUntil(self.cavangRunOutbox());
 });
 
 self.addEventListener("message", (e) => {

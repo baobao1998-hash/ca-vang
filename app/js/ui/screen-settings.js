@@ -10,6 +10,7 @@ import { on } from "../core/events.js";
 import { signIn, signOut, wasSignedIn } from "../services/auth.js";
 import { syncNow, getStatus, getSyncInfo, resetConnection } from "../services/sync.js";
 import { exportJson, importJson, todayStr } from "../services/backup.js";
+import { isPrefetchEnabled, setPrefetchEnabled, getPrefetchStats, clearPrefetched } from "../services/prefetch.js";
 
 function section(ico, title, desc, status, ...body) {
   return h("section", { class: "setting glass" },
@@ -142,6 +143,49 @@ function driveSection(cleanups) {
     h("p", { class: "soon" }, "Cá Vàng chỉ thấy các file do chính nó tạo trong thư mục “CaVang” trên Drive, không đọc được file khác của bạn."));
 }
 
+// Khối tải sẵn ảnh đầy đủ khi có Wi-Fi: công tắc + số ảnh đã tải + nút xoá bản tải sẵn.
+function prefetchSection(cleanups) {
+  const info = h("p", { class: "soon", "aria-live": "polite" }, "Đang đếm…");
+  const why = h("p", { class: "soon" });
+  const msg = h("p", { class: "soon", "aria-live": "polite" });
+  const sw = h("input", { type: "checkbox", checked: isPrefetchEnabled(), onchange: () => { setPrefetchEnabled(sw.checked); refresh(); } });
+  const clearBtn = h("button", { type: "button", class: "btn", onclick: onClear }, "Xoá ảnh tải sẵn");
+  let alive = true, busy = false;
+  const mb = (b) => (b / 1048576 >= 10 ? Math.round(b / 1048576) : Math.round(b / 104857.6) / 10).toLocaleString("vi-VN");
+  async function refresh() {
+    if (!alive) return;
+    try {
+      const s = await getPrefetchStats();
+      info.textContent = `Đã tải sẵn ${s.done}/${s.total} ảnh · ${mb(s.bytes)} MB`;
+      why.textContent = !sw.checked ? "Đang tắt: ảnh cũ chỉ tải khi bạn mở xem."
+        : s.running ? "Đang tải thêm ảnh…"
+        : s.done >= s.total ? "Đã đủ — mở ảnh nào cũng hiện ngay, kể cả khi dùng 4G hoặc mất mạng."
+        : s.reason ? `Tạm dừng: ${s.reason}.` : "Sẽ tự tải khi có Wi-Fi và app đang mở.";
+      clearBtn.disabled = busy || s.done === 0;
+    } catch { info.textContent = ""; }
+  }
+  async function onClear() {
+    if (!confirm("Xoá các ảnh đầy đủ đã tải sẵn trên máy này? Ảnh nhỏ vẫn còn, ảnh trên Google Drive không bị ảnh hưởng (mở ảnh nào sẽ tải lại ảnh đó). Công tắc tải sẵn sẽ được tắt.")) return;
+    busy = true; clearBtn.disabled = true; msg.textContent = "Đang xoá…";
+    try {
+      const n = await clearPrefetched();
+      sw.checked = false;
+      msg.textContent = `Đã xoá ${n} ảnh tải sẵn. Bật lại công tắc nếu muốn tải lại.`;
+    } catch (e) { msg.textContent = "Không xoá được: " + (e.message || e); }
+    busy = false; refresh();
+  }
+  let t = 0;
+  const later = () => { clearTimeout(t); t = setTimeout(refresh, 800); };
+  cleanups.push(on("prefetch:progress", later), on("prefetch:state", later), on("sync:status", later), () => { alive = false; clearTimeout(t); });
+  refresh();
+  return h("section", { class: "setting glass" },
+    h("div", { class: "setting-head" }, h("div", { class: "ico" }, icon("image", 22)), h("div", null, h("h2", null, "Ảnh tải sẵn"), h("p", null, "Mở ảnh cũ nhanh, dùng được cả khi mất mạng."))),
+    h("label", { class: "switch-row" }, sw, h("span", null, "Tải sẵn ảnh đầy đủ khi dùng Wi‑Fi")),
+    info, why,
+    h("p", { class: "soon" }, "Chỉ tải khi app đang mở, có Wi‑Fi, pin từ 20% (hoặc đang sạc) và máy còn trống bộ nhớ. Không tải khi đóng app nên không hao pin."),
+    h("div", { class: "actions" }, clearBtn), msg);
+}
+
 // Khối sao lưu: xuất / nhập file JSON.
 function backupSection() {
   const msg = h("p", { class: "soon", "aria-live": "polite" });
@@ -211,6 +255,7 @@ function versionSection() {
   }
   return section("info", "Phiên bản", "Thông tin app.", null,
     h("p", null, `Cá Vàng v${APP_VERSION}`),
+    getSetting("lastOpenMs") && h("p", { class: "soon" }, `Lần mở app gần nhất: thấy danh sách sau ${(getSetting("lastOpenMs") / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} giây`),
     h("p", { class: "soon" }, `Cấu trúc dữ liệu: ${SCHEMA_VERSION} · Dữ liệu lưu trên máy này, và lên Google Drive nếu bạn đã đăng nhập`),
     msg, h("div", { class: "actions" }, checkBtn, reloadBtn));
 }
@@ -229,6 +274,7 @@ export function renderSettings(root) {
       h("div", { class: "settings" },
         geminiSection(),
         driveSection(cleanups),
+        prefetchSection(cleanups),
         backupSection(),
         section("trash", "Thùng rác", "Khôi phục bằng chứng đã xoá (giữ 30 ngày).", null,
           counts,

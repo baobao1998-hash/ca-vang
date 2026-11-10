@@ -12,6 +12,8 @@ import { on } from "./core/events.js";
 import { APP_VERSION } from "./core/version.js";
 import { readClipboardImage } from "./services/image.js";
 import { startAutoSync, getStatus, syncNow } from "./services/sync.js";
+import { startPrefetch } from "./services/prefetch.js";
+import { setSetting } from "./data/settings.js";
 
 const view = document.getElementById("view");
 const tabs = document.getElementById("tabs");
@@ -97,8 +99,8 @@ async function start() {
   try {
     await openDb();
     await takeShared();
-    await purgeOld(); // tự xoá hẳn bản ghi nằm trong thùng rác quá 30 ngày
     initSearch(await listRecords());
+    performance.mark("cv-indexed");
     on("record:saved", ({ record }) => indexRecord(record));
     on("record:deleted", ({ id }) => unindexRecord(id));
   } catch (err) {
@@ -111,8 +113,20 @@ async function start() {
   buildTabs();
   window.addEventListener("hashchange", route);
   route();
+  // Đo "mở app → thấy danh sách" (đến khung hình đầu tiên sau khi vẽ xong). Hiện ở Cài đặt → Phiên bản.
+  performance.mark("cv-route");
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (document.visibilityState !== "visible") return; // tab ẩn thì số đo vô nghĩa
+    const ms = Math.round(performance.now());
+    window.__openMs = ms;
+    setSetting("lastOpenMs", ms);
+  }));
   buildSyncDot();
-  startAutoSync();
+  // Đồng bộ + tải sẵn ảnh chạy SAU khi danh sách đã hiện, không chặn giao diện (màn Tìm đọc thẳng từ IndexedDB trên máy).
+  setTimeout(() => { startAutoSync(); startPrefetch(); }, 0);
+  // Dọn thùng rác quá 30 ngày: để sau khi danh sách đã hiện (bản ghi đó vốn không nằm trong danh sách/chỉ mục).
+  const later = window.requestIdleCallback || ((f) => setTimeout(f, 500));
+  later(() => { purgeOld().catch((e) => console.warn("Không dọn được thùng rác:", e)); }, { timeout: 5000 });
 }
 
 // Chấm trạng thái đồng bộ ở góc trên bên phải: xám = chưa kết nối, xanh = đã đồng bộ, xanh dương nhấp nháy = đang đồng bộ, cam = chờ mạng / cần đăng nhập lại, đỏ = lỗi.

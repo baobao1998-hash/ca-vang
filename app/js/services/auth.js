@@ -5,12 +5,14 @@
 import { GOOGLE_CLIENT_ID, GOOGLE_SCOPE } from "../core/config.js";
 import { getSetting, setSetting } from "../data/settings.js";
 import { emit } from "../core/events.js";
+import { dbPut, dbDelete } from "../data/db.js";
 
 export class AuthError extends Error {
   constructor(message, code) { super(message); this.name = "AuthError"; this.code = code; }
 }
 
 const TOKEN_KEY = "cavang.gtoken";
+const SW_TOKEN_KEY = "swToken";
 let token = null;
 let expiresAt = 0;
 
@@ -26,8 +28,16 @@ function persistToken() {
     if (token) localStorage.setItem(TOKEN_KEY, JSON.stringify({ t: token, exp: expiresAt }));
     else localStorage.removeItem(TOKEN_KEY);
   } catch { /* bỏ qua */ }
+  mirrorTokenForWorker();
+}
+// Service worker (đồng bộ nền "một lần" khi app đã đóng) không đọc được localStorage → chép token sang IndexedDB (kho "meta", khoá "swToken").
+// Cùng vòng đời với bản trong localStorage: đăng xuất / hết hạn / bị Google từ chối thì xoá cả hai.
+function mirrorTokenForWorker() {
+  const job = token ? dbPut("meta", { key: SW_TOKEN_KEY, value: { t: token, exp: expiresAt } }) : dbDelete("meta", SW_TOKEN_KEY);
+  job.catch(() => { /* không ghi được thì service worker chỉ bỏ qua, chờ lần mở app sau */ });
 }
 restoreToken();
+if (token) mirrorTokenForWorker(); // bản 0.5.1 trở về trước chưa chép sang IndexedDB
 let gisPromise = null;
 let pending = null;
 let lastQuietFail = 0;

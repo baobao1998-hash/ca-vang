@@ -39,7 +39,8 @@
 app/
   index.html               ← khung app (1 trang, điều hướng bằng #hash)
   manifest.webmanifest     ← cài PWA + share_target (Android)
-  sw.js                    ← service worker: cache offline + nhận ảnh chia sẻ
+  sw.js                    ← service worker: cache offline + nhận ảnh chia sẻ + sự kiện sync nền
+  sw-outbox.js             ← (importScripts trong sw.js) đẩy outbox lên Drive khi app đã đóng, MỘT LẦN
   icons/                   ← icon 192, 512, maskable
   css/
     tokens.css             ← biến màu, bo góc, độ mờ (sáng/tối)
@@ -64,6 +65,7 @@ app/
       auth.js              ← đăng nhập Google, lấy access token
       drive.js             ← gọi Drive API thô (upload, list, get, update)
       sync.js              ← đồng bộ IndexedDB ⇄ Drive
+      prefetch.js          ← tải sẵn ảnh đầy đủ khi có Wi-Fi (app đang mở)
       backup.js            ← xuất/nhập file sao lưu, snapshot theo ngày
     ui/
       dom.js               ← h() tạo phần tử an toàn, toast()
@@ -126,7 +128,7 @@ scripts/                   ← script PowerShell tiện ích (sao lưu dự án)
 | `records` | `id` | Evidence |
 | `blobs` | `id` | `{ id, full: Blob, thumb: Blob }` — ảnh nén + thumbnail ~320px |
 | `outbox` | `id` | việc chờ đồng bộ `{ id, op: "put"|"delete", recordId, tries }` |
-| `meta` | `key` | `lastSyncAt`, `driveFolderIds`, ... |
+| `meta` | `key` | `lastSyncAt`, `driveFolderIds`, `swToken` (bản chép token Google cho service worker; xoá khi đăng xuất/hết hạn), ... |
 
 ### Google Drive
 ```
@@ -153,6 +155,12 @@ scripts/                   ← script PowerShell tiện ích (sao lưu dự án)
 - Kết quả chỉ là **gợi ý** → người dùng xác nhận/sửa rồi mới lưu.
 - Không có mạng/hết hạn mức → lưu bản ghi với `ocrStatus: "pending"`, tự thử lại sau.
 - Key lưu `localStorage` trên thiết bị; hướng dẫn người dùng giới hạn key theo HTTP referrer (tên miền GitHub Pages).
+
+## 6b. Tải sẵn ảnh + đồng bộ khi đã đóng app (từ v0.5.2)
+**Tải sẵn ảnh đầy đủ (`services/prefetch.js`)** — công tắc "Tải sẵn ảnh đầy đủ khi dùng Wi‑Fi" (`settings.prefetchWifi`, mặc định bật). Chỉ chạy khi TẤT CẢ đúng: đã đăng nhập Google và token còn hạn · online · `navigator.connection.type` là wifi/ethernet (máy tính không báo loại mạng → coi là được) · không `saveData` · pin ≥ 20% hoặc đang sạc (Battery API nếu có) · app đang hiển thị · không trùng lúc đang đồng bộ · còn trống ≥ 10% (`storage.estimate()`). Tải lần lượt từng ảnh (mới nhất trước), nghỉ ~0,6 giây/ảnh lúc rảnh (`requestIdleCallback`), kiểm tra lại điều kiện trước mỗi ảnh. Dùng lại đường tải sẵn có `getFullBlob` → `loadFull` (sync.js). `navigator.storage.persist()` gọi một lần. Chạy trong trang, KHÔNG chạy nền → đóng app là dừng, không hao pin.
+**Đồng bộ nền một lần (Background Sync)** — khi mất mạng/ rời app mà còn việc chưa đẩy, app gọi `registration.sync.register("cavang-outbox")`; khi có mạng trình duyệt đánh thức service worker, `sw-outbox.js` đẩy outbox lên Drive rồi thôi. SW dùng token ở IndexedDB `meta.swToken`; token hết hạn/không có thì bỏ qua và chờ lần mở app sau (không xin token mới trong nền). Chỉ ĐẨY, không kéo về. Khoá Web Locks `cavang-sync` dùng chung với app để không đẩy trùng. Trình duyệt không hỗ trợ (Safari/Firefox) → giữ cách cũ (đẩy khi mở app).
+**Vì sao KHÔNG làm Periodic Background Sync:** token Google chỉ sống ~1 giờ và không gia hạn được khi không có người chạm → định kỳ thức dậy cũng không đẩy được gì, chỉ tốn pin; lại cần trình duyệt cho phép theo mức độ dùng app. Muốn thật sự đồng bộ nền định kỳ cần máy chủ giữ refresh token (trái nguyên tắc "không có máy chủ").
+**Mở app nhanh:** màn Tìm đọc thẳng IndexedDB; đồng bộ + tải sẵn chỉ khởi động SAU khi danh sách đã vẽ; dọn thùng rác quá 30 ngày chạy lúc rảnh. Số đo "mở app → danh sách" lưu ở `settings.lastOpenMs`, hiện trong Cài đặt → Phiên bản.
 
 ## 7. Hợp đồng module (chữ ký hàm export — không tự đổi)
 ```js
@@ -189,6 +197,7 @@ analyzeText(text) -> Promise<cùng dạng, ocrText="">
 testKey(key) -> Promise<boolean>
 // services/auth.js
 signIn(), signOut(), getToken({interactive}) -> Promise<string>, isSignedIn() -> boolean, needsRenewal(), renewQuietly()
+// Token cũng được chép sang IndexedDB meta.swToken cho service worker (sw-outbox.js); signOut/invalidateToken xoá cả hai nơi.
 // Token Google (~1 giờ, scope drive.file) được nhớ trong localStorage tới khi hết hạn; hết hạn thì xin lại khi người dùng chạm (không tự bật cửa sổ ở nền).
 // services/drive.js
 ensureFolders() -> {root, files, records, snapshots}
@@ -196,7 +205,11 @@ uploadFile(blob, name, parentId) -> driveId ; downloadFile(driveId) -> Blob
 putJson(name, obj, parentId, existingId?) -> driveId ; getJson(driveId)
 listChanged(parentId, sinceIso) -> [{id, name, modifiedTime}]
 // services/sync.js
-syncNow() -> Promise<{pushed, pulled}> ; startAutoSync() ; stopAutoSync()
+syncNow() -> Promise<{pushed, pulled}> ; startAutoSync() ; stopAutoSync() ; requestBackgroundSync() -> Promise<boolean>
+// services/prefetch.js
+startPrefetch() ; isPrefetchEnabled() ; setPrefetchEnabled(bool) ; blockedReason() -> Promise<string> (rỗng = được chạy)
+getPrefetchStats() -> {done,total,bytes,reason,running} ; clearPrefetched() -> Promise<số ảnh đã xoá>  // chỉ xoá bản đầy đủ đã có trên Drive, giữ thumbnail, rồi tắt công tắc
+// sự kiện thêm: "prefetch:progress", "prefetch:state", "auth:changed"
 // services/backup.js
 exportZip() / exportJson() -> Blob ; importJson(file) ; writeDailySnapshot()
 ```

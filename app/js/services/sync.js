@@ -166,7 +166,7 @@ let again = false;
 const isNetworkOrAuth = (e) => e instanceof AuthError || e?.code === "offline";
 
 async function doSync(manual) {
-  if (!navigator.onLine) { setStatus("offline", "Đang mất mạng — thay đổi sẽ tự đẩy lên khi có mạng."); return { pushed: 0, pulled: 0 }; }
+  if (!navigator.onLine) { setStatus("offline", "Đang mất mạng — thay đổi sẽ tự đẩy lên khi có mạng."); requestBackgroundSync(); return { pushed: 0, pulled: 0 }; }
   if (!isSignedIn()) {
     if (!manual) {
       if (wasSignedIn()) setStatus("auth", "Cần đăng nhập lại Google — chạm vào chấm trạng thái hoặc nút Đăng nhập lại.");
@@ -201,7 +201,7 @@ async function doSync(manual) {
     setStatus("idle", "Đã đồng bộ");
     return { pushed, pulled };
   } catch (e) {
-    if (e?.code === "offline") setStatus("offline", "Chờ mạng — thay đổi sẽ tự đẩy lên khi có mạng.");
+    if (e?.code === "offline") { setStatus("offline", "Chờ mạng — thay đổi sẽ tự đẩy lên khi có mạng."); requestBackgroundSync(); }
     else if (e instanceof AuthError) setStatus("auth", e.message);
     else {
       if (e?.code === "notfound") await forgetFolders();
@@ -212,9 +212,24 @@ async function doSync(manual) {
 }
 
 // Đồng bộ ngay. manual=true (bấm nút) thì được mở cửa sổ đăng nhập nếu cần.
+// Khoá "cavang-sync" (Web Locks) để app và service worker (đồng bộ nền) không đẩy cùng một bản ghi cùng lúc → khỏi tạo file trùng trên Drive.
+const withLock = (fn) => (navigator.locks?.request ? navigator.locks.request("cavang-sync", fn) : fn());
+
+// Đồng bộ nền MỘT LẦN khi app đã đóng: nhờ trình duyệt đánh thức service worker đúng lúc có mạng để đẩy nốt outbox.
+// Không dùng Periodic Sync (xem docs/KIEN-TRUC.md mục 6b). Trình duyệt không hỗ trợ thì bỏ qua — vẫn đẩy khi mở app như cũ.
+export async function requestBackgroundSync() {
+  try {
+    if (!wasSignedIn() || !("serviceWorker" in navigator)) return false;
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg.sync) return false;
+    await reg.sync.register("cavang-outbox");
+    return true;
+  } catch { return false; }
+}
+
 export function syncNow({ manual = false } = {}) {
   if (running) { again = true; return running; }
-  running = doSync(manual).finally(() => {
+  running = withLock(() => doSync(manual)).finally(() => {
     running = null;
     if (again) { again = false; schedule(1500); }
   });
@@ -227,18 +242,24 @@ let timer = null;
 let interval = null;
 let offs = [];
 
+let scheduled = false; // có đợt đồng bộ đang hẹn giờ mà chưa chạy
 function schedule(ms = 2500) {
   if (!wasSignedIn() && !isSignedIn()) return;
   clearTimeout(timer);
-  timer = setTimeout(() => { syncNow().catch(() => {}); }, ms);
+  scheduled = true;
+  timer = setTimeout(() => { scheduled = false; syncNow().catch(() => {}); }, ms);
 }
 
 export function startAutoSync() {
   if (started) return;
   started = true;
-  offs.push(on("record:saved", (p) => { if (!p?.remote) schedule(); }));
-  offs.push(on("record:deleted", (p) => { if (!p?.remote) schedule(); }));
-  const onVisible = () => { if (document.visibilityState === "visible") schedule(500); };
+  offs.push(on("record:saved", (p) => { if (!p?.remote) { schedule(); if (!navigator.onLine) requestBackgroundSync(); } }));
+  offs.push(on("record:deleted", (p) => { if (!p?.remote) { schedule(); if (!navigator.onLine) requestBackgroundSync(); } }));
+  const onVisible = () => {
+    if (document.visibilityState === "visible") { schedule(500); return; }
+    // Người dùng rời app: nếu còn việc chưa đẩy xong thì nhờ trình duyệt đẩy nốt khi app đã đóng.
+    if (wasSignedIn() && (scheduled || running || again || getStatus().state !== "idle")) requestBackgroundSync();
+  };
   const onOnline = () => schedule(500);
   const onOffline = () => { if (wasSignedIn()) setStatus("offline", "Đang mất mạng — thay đổi sẽ tự đẩy lên khi có mạng."); };
   document.addEventListener("visibilitychange", onVisible);
