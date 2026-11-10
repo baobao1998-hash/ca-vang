@@ -1,5 +1,6 @@
 // Màn Cài đặt: các mục để trống (sẽ nối ở GĐ3, GĐ4). Phiên bản đọc từ core/version.js.
 import { h, icon, mount } from "./dom.js";
+import { listRecords } from "../data/records.js";
 import { APP_VERSION, SCHEMA_VERSION } from "../core/version.js";
 
 function section(ico, title, desc, status, ...body) {
@@ -12,6 +13,11 @@ function section(ico, title, desc, status, ...body) {
 }
 
 export function renderSettings(root) {
+  const counts = h("p", { class: "soon" }, "Đang đếm…");
+  listRecords({ includeDeleted: true }).then((all) => {
+    const trash = all.filter((r) => r.deleted).length;
+    counts.textContent = `${all.length - trash} bằng chứng trên máy này · ${trash} trong thùng rác`;
+  }).catch(() => { counts.textContent = ""; });
   mount(root,
     h("section", { class: "screen" },
       h("div", { class: "topbar" }, h("h1", null, "Cài đặt")),
@@ -26,9 +32,12 @@ export function renderSettings(root) {
           h("div", { class: "actions" },
             h("button", { type: "button", class: "btn", disabled: true }, "Xuất sao lưu"),
             h("button", { type: "button", class: "btn", disabled: true }, "Nhập sao lưu"))),
+        section("trash", "Thùng rác", "Khôi phục bằng chứng đã xoá (giữ 30 ngày).", null,
+          counts,
+          h("a", { class: "btn", href: "#/thung-rac" }, icon("trash", 18), "Mở thùng rác")),
         section("info", "Phiên bản", "Thông tin app.", null,
           h("p", null, `Cá Vàng v${APP_VERSION}`),
-          h("p", { class: "soon" }, `Cấu trúc dữ liệu: ${SCHEMA_VERSION} · Giao diện thử (dữ liệu giả)`)),
+          h("p", { class: "soon" }, `Cấu trúc dữ liệu: ${SCHEMA_VERSION} · Dữ liệu lưu trên máy này (chưa đồng bộ)`)),
       ),
     ),
   );
