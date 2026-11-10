@@ -1,6 +1,8 @@
 // Màn Chi tiết: ảnh lớn (bấm để phóng to), thông tin, Sửa / Xoá (vào thùng rác).
 import { h, icon, mount, toast } from "./dom.js";
-import { DOC_TYPES, formatDate, collectValues } from "./common.js";
+import { formatDate, collectValues } from "./common.js";
+import { dateInput } from "./components/date-input.js";
+import { docTypeInput } from "./components/doc-type.js";
 import { openLightbox } from "./components/lightbox.js";
 import { tagInput } from "./components/tag-input.js";
 import { getRecord, getFullBlob, listRecords, saveRecord, softDelete } from "../data/records.js";
@@ -100,8 +102,8 @@ export function renderDetail(root, id) {
     const all = await listRecords().catch(() => []);
     const sug = (f) => collectValues(all, f);
     const fTitle = h("input", { class: "field", id: "e-title", value: r.title });
-    const fType = h("select", { class: "field", id: "e-type" }, ...[...new Set([...DOC_TYPES, r.docType])].map((t) => h("option", { value: t, selected: t === r.docType }, t)));
-    const fDate = h("input", { class: "field", id: "e-date", type: "date", value: r.docDate || "" });
+    const fType = docTypeInput({ id: "e-type", value: r.docType });
+    const fDate = dateInput({ id: "e-date", value: r.docDate || "" });
     const fNote = h("textarea", { class: "field", id: "e-note", rows: 3 }); fNote.value = r.note || "";
     const items = tagInput({ name: "e-ma", label: "Mã hàng", values: r.itemCodes, suggestions: sug("itemCodes") });
     const lots = tagInput({ name: "e-lo", label: "Số lô", values: r.lotNumbers, suggestions: sug("lotNumbers") });
@@ -115,10 +117,12 @@ export function renderDetail(root, id) {
       e.preventDefault();
       const title = fTitle.value.trim();
       if (!title) { toast("Tiêu đề không được để trống.", "error"); fTitle.focus(); return; }
+      const docDate = fDate.getIso();
+      if (docDate === null) { toast("Ngày chưa đúng. Hãy gõ dạng ngày/tháng/năm, ví dụ 05/10/2026.", "error"); fDate.focus(); return; }
       saveBtn.disabled = true;
       try {
         r = await saveRecord({
-          id, title, docType: fType.value, docDate: fDate.value || "", note: fNote.value.trim(),
+          id, title, docType: fType.commit(), docDate, note: fNote.value.trim(),
           itemCodes: items.getValues(), lotNumbers: lots.getValues(), subjects: subjects.getValues(), situations: situations.getValues(),
           ...(fText ? { text: fText.value } : {}),
         });
@@ -128,8 +132,8 @@ export function renderDetail(root, id) {
     } },
       h("div", { class: "form-grid two" },
         h("div", { class: "span2" }, h("label", { class: "label", for: "e-title" }, "Tiêu đề"), fTitle),
-        h("div", null, h("label", { class: "label", for: "e-type" }, "Loại giấy tờ"), fType),
-        h("div", null, h("label", { class: "label", for: "e-date" }, "Ngày trên giấy tờ"), fDate),
+        h("div", null, h("label", { class: "label", for: "e-type" }, "Loại giấy tờ"), fType.el),
+        h("div", null, h("label", { class: "label", for: "e-date" }, "Ngày trên giấy tờ"), fDate.el),
         h("div", null, items), h("div", null, lots), h("div", null, subjects), h("div", null, situations),
         fText && h("div", { class: "span2" }, h("label", { class: "label", for: "e-text" }, "Nội dung"), fText),
         h("div", { class: "span2" }, h("label", { class: "label", for: "e-note" }, "Ghi chú"), fNote),

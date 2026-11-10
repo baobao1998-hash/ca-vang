@@ -1,10 +1,26 @@
 // Hàm dùng chung cho các màn: danh mục, ngày tháng, tô sáng từ khớp, ảnh nhỏ, gợi ý giá trị đã dùng.
 import { h } from "./dom.js";
 import { normalizeVi } from "../core/text.js";
-import { DOC_TYPES } from "../core/config.js";
+import { DOC_TYPES, CUSTOM_DOCTYPES_KEY } from "../core/config.js";
 import { getThumbUrl } from "../data/records.js";
+import { getSetting, setSetting } from "../data/settings.js";
 
 export { DOC_TYPES };
+
+/** Danh mục loại giấy tờ: mặc định + loại người dùng đã tự thêm. */
+export function getDocTypes() {
+  const custom = getSetting(CUSTOM_DOCTYPES_KEY, []);
+  return [...new Set([...DOC_TYPES, ...(Array.isArray(custom) ? custom : [])])];
+}
+
+/** Nhớ một loại giấy tờ mới (nếu chưa có, không phân biệt hoa/thường/dấu). */
+export function rememberDocType(name) {
+  const t = String(name || "").trim().replace(/\s+/g, " ").slice(0, 40);
+  if (!t) return;
+  if (getDocTypes().some((x) => normalizeVi(x) === normalizeVi(t))) return;
+  const custom = getSetting(CUSTOM_DOCTYPES_KEY, []);
+  setSetting(CUSTOM_DOCTYPES_KEY, [...(Array.isArray(custom) ? custom : []), t]);
+}
 
 export function formatDate(iso) {
   if (!iso) return "";

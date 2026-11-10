@@ -3,7 +3,7 @@
 import { h, icon } from "../dom.js";
 import { normalizeVi } from "../../core/text.js";
 
-export function tagInput({ name, label, placeholder = "Gõ rồi nhấn Enter", values = [], hint = "", suggestions: initial = [] }) {
+export function tagInput({ name, label, placeholder = "Gõ rồi nhấn Enter", values = [], hint = "", suggestions: initial = [], onchange }) {
   let suggestions = initial;
   const items = [...values];
   const list = h("div", { class: "tag-input field", onclick: () => input.focus() });
@@ -17,14 +17,14 @@ export function tagInput({ name, label, placeholder = "Gõ rồi nhấn Enter", 
     list.replaceChildren(
       ...items.map((v, i) =>
         h("span", { class: "chip chip-static" }, v,
-          h("button", { type: "button", class: "chip-x", "aria-label": "Xoá " + v, onclick: (e) => { e.stopPropagation(); items.splice(i, 1); render(); } }, icon("close", 14))),
+          h("button", { type: "button", class: "chip-x", "aria-label": "Xoá " + v, onclick: (e) => { e.stopPropagation(); items.splice(i, 1); render(); onchange?.(); } }, icon("close", 14))),
       ),
       input,
     );
   }
   function add(v) {
     v = String(v).replace(/,$/, "").trim();
-    if (v && !items.includes(v)) items.push(v);
+    if (v && !items.includes(v)) { items.push(v); onchange?.(); }
     input.value = "";
     closeMenu();
     render();
@@ -51,7 +51,7 @@ export function tagInput({ name, label, placeholder = "Gõ rồi nhấn Enter", 
     else if (e.key === "ArrowUp" && shown.length) { e.preventDefault(); active = (active - 1 + shown.length) % shown.length; mark(); }
     else if (e.key === "Escape") closeMenu();
     else if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(active >= 0 ? shown[active] : input.value); }
-    else if (e.key === "Backspace" && !input.value && items.length) { items.pop(); render(); input.focus(); }
+    else if (e.key === "Backspace" && !input.value && items.length) { items.pop(); render(); input.focus(); onchange?.(); }
   });
   input.addEventListener("blur", () => { closeMenu(); if (input.value.trim()) add(input.value); });
   render();
@@ -64,6 +64,7 @@ export function tagInput({ name, label, placeholder = "Gõ rồi nhấn Enter", 
   );
   el.getValues = () => [...items];
   el.setSuggestions = (arr) => { suggestions = arr || []; };
+  el.setValues = (arr) => { items.length = 0; items.push(...(arr || [])); render(); }; // gọi từ code, không tính là người dùng sửa
   el.reset = () => { items.length = 0; input.value = ""; render(); };
   return el;
 }

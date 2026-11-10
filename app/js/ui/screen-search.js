@@ -1,6 +1,7 @@
 // Màn Tìm: ô tìm tức thì (debounce 80ms) + chip lọc loại giấy tờ / đối tượng / thời gian + lưới thẻ có tô sáng.
 import { h, icon, mount } from "./dom.js";
-import { DOC_TYPES, formatDate, highlight, thumbImg, daysAgoIso, collectValues } from "./common.js";
+import { startOcrQueue } from "./ocr-queue.js";
+import { getDocTypes, formatDate, highlight, thumbImg, daysAgoIso, collectValues } from "./common.js";
 import { listRecords } from "../data/records.js";
 import { search } from "../data/search.js";
 import { SEARCH_DEBOUNCE_MS } from "../core/config.js";
@@ -26,6 +27,7 @@ function card(r, q) {
 }
 
 export function renderSearch(root) {
+  startOcrQueue();
   let alive = true;
   let records = [];
   let byId = new Map();
@@ -48,7 +50,7 @@ export function renderSearch(root) {
     typeBox.hidden = subjBox.hidden = timeBox.hidden = none;
     if (none) return;
     const presentTypes = new Set(records.map((r) => r.docType));
-    const types = DOC_TYPES.filter((t) => presentTypes.has(t) || state.type === t);
+    const types = [...new Set([...getDocTypes(), ...presentTypes])].filter((t) => presentTypes.has(t) || state.type === t);
     typeBox.replaceChildren(chip("Tất cả loại", !state.type, () => { state.type = ""; refresh(); }),
       ...types.map((t) => chip(t, state.type === t, () => { state.type = state.type === t ? "" : t; refresh(); })));
     const subjects = collectValues(records, "subjects").slice(0, 12);

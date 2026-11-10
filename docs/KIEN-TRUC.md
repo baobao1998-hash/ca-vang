@@ -30,7 +30,7 @@
 | Lưu cục bộ | IndexedDB (tự viết wrapper nhỏ) | |
 | Đăng nhập | Google Identity Services (token client) | scope `https://www.googleapis.com/auth/drive.file` — app chỉ thấy file do chính nó tạo |
 | Lưu trữ | Google Drive API v3 (REST, fetch) | |
-| Đọc chữ ảnh | Gemini API, model cấu hình được (mặc định `gemini-2.5-flash`) | trả JSON có cấu trúc |
+| Đọc chữ ảnh | Gemini API, model cấu hình được (mặc định `gemini-3.5-flash-lite`) | trả JSON có cấu trúc |
 | Hosting | GitHub Pages (deploy thư mục `app/` bằng GitHub Actions) | |
 
 ## 3. Cấu trúc thư mục
@@ -91,7 +91,7 @@ scripts/                   ← script PowerShell tiện ích (sao lưu dự án)
 
   // Người dùng nhập (có gợi ý từ Gemini)
   title: "CO/CQ kim điện cực lô 2410",
-  docType: "CO/CQ",         // danh mục: CO/CQ, Hoá đơn, Hợp đồng, Báo giá, Email, Tin nhắn, Biên bản, Khác
+  docType: "CO/CQ",         // danh mục: CO/CQ, Hoá đơn, Hợp đồng, Báo giá, Đơn hàng, Chứng từ thanh toán, Tài liệu/Sách, Email, Tin nhắn, Biên bản, Khác (người dùng gõ thêm loại mới được)
   itemCodes: ["KDC-0.8"],   // mã hàng
   lotNumbers: ["2410"],     // số lô
   subjects: ["Bệnh viện A"],// ĐỐI TƯỢNG: khách hàng/NCC/người/phòng ban

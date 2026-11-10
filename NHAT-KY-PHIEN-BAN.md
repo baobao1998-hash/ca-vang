@@ -2,6 +2,15 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.3.0 · 2026-11-10 · GĐ3 — Việc 3.1: máy tự đọc chữ và điền các ô (Gemini)
+- `services/gemini.js`: gọi Gemini bằng REST, trả JSON có cấu trúc, tối đa 30 giây, báo lỗi tiếng Việt (sai key / hết hạn mức / mất mạng / model sai). Model mặc định đổi sang `gemini-3.5-flash-lite` vì Google đã ngừng `gemini-2.5-flash` (tra tài liệu ngày 2026-11-10); đổi được trong Cài đặt.
+- Cài đặt: ô key (ẩn ký tự), "Kiểm tra key", chọn model, công tắc "Tự đọc chữ khi thêm ảnh" (mặc định bật), "Đọc lại các ảnh chưa đọc".
+- Màn Thêm: chọn/dán ảnh hoặc văn bản → máy tự điền Tiêu đề, Loại, Ngày, Mã hàng, Số lô, Đối tượng, Tình huống (nếu suy ra được) + chữ đọc từ ảnh. Ô máy điền có dấu "✨ gợi ý", sửa là mất dấu; ô bạn đã gõ không bị ghi đè. Công tắc "Không gửi AI (riêng tư)".
+- Mất mạng/hết hạn mức → lưu "chờ đọc" (`ocrStatus: pending`), tự thử lại khi có mạng (và mỗi 3 phút).
+- Danh mục loại giấy tờ thêm: Đơn hàng, Chứng từ thanh toán, Tài liệu/Sách; chọn "＋ Loại mới…" để gõ loại riêng, được nhớ cho lần sau; Gemini cũng có thể đề xuất loại mới.
+- Ô ngày hiện dd/mm/yyyy kiểu Việt Nam trên mọi trình duyệt (vẫn lưu yyyy-mm-dd).
+- Đã thử bằng Gemini GIẢ LẬP (mock): kiểm tra key đúng/sai/mất mạng, tự điền, không ghi đè ô đã gõ, mất mạng → chờ → đọc lại. CHƯA thử với Gemini thật (cần key của chủ dự án).
+
 ## v0.2.0 · 2026-11-10 · GĐ2 — Việc 2.1: app chạy thật trên 1 máy (offline)
 - Bỏ dữ liệu giả; nối giao diện với kho dữ liệu thật (IndexedDB) + tìm kiếm MiniSearch.
 - Thêm bằng chứng: chọn / chụp / kéo thả / Ctrl+V (dán ở màn nào cũng được) nhiều ảnh một lúc, hoặc dán văn bản. Mỗi ảnh thành 1 bản ghi, dùng chung thông tin đã nhập.
