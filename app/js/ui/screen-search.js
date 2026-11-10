@@ -4,6 +4,7 @@ import { startOcrQueue } from "./ocr-queue.js";
 import { getDocTypes, formatDate, highlight, thumbImg, daysAgoIso, collectValues } from "./common.js";
 import { listRecords } from "../data/records.js";
 import { search } from "../data/search.js";
+import { setDossierSelection } from "./screen-dossier.js";
 import { AREAS, SEARCH_DEBOUNCE_MS } from "../core/config.js";
 
 // Giữ lại cách tìm khi quay lại từ màn Chi tiết.
@@ -11,12 +12,16 @@ const state = { q: "", type: "", subject: "", area: "", days: 0 };
 const PAGE_SIZE = 60;
 const TIME_CHIPS = [[0, "Mọi lúc"], [7, "7 ngày"], [30, "30 ngày"], [365, "1 năm"]];
 
+// Chế độ "Chọn nhiều" (để tạo hồ sơ trình bày). Giữ ở mức module để quay lại từ màn Hồ sơ vẫn còn tick.
+const sel = { on: false, ids: new Set() };
+const LONG_PRESS_MS = 500;
+
 function card(r, q) {
   const thumb = r.kind === "image"
     ? thumbImg(r)
     : h("div", { class: "thumb-text" }, r.text);
-  return h("a", { class: "card glass", href: "#/chi-tiet/" + encodeURIComponent(r.id) },
-    h("div", { class: "thumb-wrap" }, h("span", { class: "badge" }, r.docType), thumb),
+  return h("a", { class: "card glass" + (sel.ids.has(r.id) ? " selected" : ""), href: "#/chi-tiet/" + encodeURIComponent(r.id), dataset: { id: r.id }, draggable: "false" },
+    h("div", { class: "thumb-wrap" }, h("span", { class: "badge" }, r.docType), h("span", { class: "sel-mark", "aria-hidden": "true" }, icon("check", 16)), thumb),
     h("div", { class: "card-body" },
       h("h3", { class: "card-title" }, highlight(r.title, q)),
       r.itemCodes.length > 0 && h("div", { class: "card-line" }, icon("text", 14), h("span", null, highlight(r.itemCodes.join(", "), q))),
@@ -44,6 +49,72 @@ export function renderSearch(root) {
   const timeBox = h("div", { class: "chips", role: "group", "aria-label": "Lọc theo thời gian" });
   const meta = h("p", { class: "result-meta", "aria-live": "polite" });
   const grid = h("div", { class: "grid" });
+  let currentList = []; // kết quả đang lọc (đủ, không chỉ phần đã vẽ)
+
+  // ----- Chọn nhiều -----
+  const selToggle = h("button", { type: "button", class: "btn sel-toggle", onclick: () => setSelectMode(!sel.on) });
+  const selCount = h("strong", null);
+  const selAll = h("button", { type: "button", class: "btn btn-ghost sel-link", onclick: () => { for (const r of currentList) sel.ids.add(r.id); updateSelUi(); } });
+  const selNone = h("button", { type: "button", class: "btn btn-ghost sel-link", onclick: () => { sel.ids.clear(); updateSelUi(); } }, "Bỏ chọn");
+  const selMake = h("button", { type: "button", class: "btn btn-primary sel-make", onclick: () => {
+    setDossierSelection([...sel.ids]);
+    location.hash = "#/ho-so";
+  } }, "Tạo hồ sơ");
+  const selBar = h("div", { class: "selbar glass-strong", role: "region", "aria-label": "Thanh chọn nhiều" },
+    h("div", { class: "selbar-row" }, selCount, h("span", { class: "selbar-links" }, selAll, selNone)), selMake);
+
+  function setSelectMode(on) {
+    sel.on = on;
+    if (!on) sel.ids.clear();
+    updateSelUi();
+  }
+  function toggleId(id) {
+    if (sel.ids.has(id)) sel.ids.delete(id); else sel.ids.add(id);
+    updateSelUi();
+  }
+  function updateSelUi() {
+    grid.classList.toggle("selecting", sel.on);
+    selBar.hidden = !sel.on;
+    selToggle.replaceChildren(icon("check", 18), sel.on ? "Xong" : "Chọn nhiều");
+    selToggle.setAttribute("aria-pressed", String(sel.on));
+    for (const el of grid.querySelectorAll(".card")) el.classList.toggle("selected", sel.ids.has(el.dataset.id));
+    const n = sel.ids.size;
+    selCount.textContent = n ? `Đã chọn ${n}` : "Chạm vào thẻ để chọn";
+    selAll.textContent = `Chọn tất cả ${currentList.length} kết quả đang lọc`;
+    selAll.hidden = !currentList.length || n >= currentList.length;
+    selNone.hidden = !n;
+    selMake.disabled = !n;
+    selMake.textContent = n ? `Tạo hồ sơ (${n})` : "Tạo hồ sơ";
+  }
+
+  grid.addEventListener("click", (e) => {
+    if (longFired) { e.preventDefault(); longFired = false; return; }
+    const c = e.target.closest?.(".card");
+    if (!c || !sel.on) return;
+    e.preventDefault();
+    toggleId(c.dataset.id);
+  });
+  // Nhấn giữ một thẻ (điện thoại/cảm ứng) → vào chế độ chọn và tick thẻ đó.
+  let longFired = false, pressTimer = 0, pressX = 0, pressY = 0, touchy = false;
+  const cancelPress = () => clearTimeout(pressTimer);
+  grid.addEventListener("pointerdown", (e) => {
+    touchy = e.pointerType !== "mouse";
+    const c = e.target.closest?.(".card");
+    if (!touchy || !c) return;
+    pressX = e.clientX; pressY = e.clientY;
+    cancelPress();
+    pressTimer = setTimeout(() => {
+      longFired = true;
+      setTimeout(() => { longFired = false; }, 700);
+      sel.on = true;
+      sel.ids.add(c.dataset.id);
+      updateSelUi();
+      try { navigator.vibrate?.(25); } catch { /* không hỗ trợ rung */ }
+    }, LONG_PRESS_MS);
+  });
+  grid.addEventListener("pointermove", (e) => { if (Math.abs(e.clientX - pressX) > 10 || Math.abs(e.clientY - pressY) > 10) cancelPress(); });
+  for (const ev of ["pointerup", "pointercancel", "pointerleave"]) grid.addEventListener(ev, cancelPress);
+  grid.addEventListener("contextmenu", (e) => { if (touchy && e.target.closest?.(".card")) e.preventDefault(); }); // chặn menu "mở liên kết" của Chrome khi nhấn giữ
 
   const chip = (text, on, fn) => h("button", { type: "button", class: "chip", "aria-pressed": String(on), onclick: fn }, text);
 
@@ -82,6 +153,7 @@ export function renderSearch(root) {
     } else {
       list = records.filter(matches).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     }
+    currentList = list;
     if (!records.length) {
       meta.textContent = "";
       mount(grid, h("div", { class: "empty glass", style: { gridColumn: "1 / -1" } },
@@ -111,20 +183,22 @@ export function renderSearch(root) {
     drawMore();
   }
 
-  function refresh() { drawChips(); drawResults(); }
+  function refresh() { drawChips(); drawResults(); updateSelUi(); }
 
   input.addEventListener("input", () => {
     clearTimeout(timer);
-    timer = setTimeout(() => { state.q = input.value; drawResults(); }, SEARCH_DEBOUNCE_MS);
+    timer = setTimeout(() => { state.q = input.value; drawResults(); updateSelUi(); }, SEARCH_DEBOUNCE_MS);
   });
 
   mount(root,
     h("section", { class: "screen" },
-      h("div", { class: "topbar" }, h("div", { class: "brand" }, h("img", { src: "icons/icon-192.png", alt: "", width: 36, height: 36 }), h("h1", null, "Cá Vàng"))),
+      h("div", { class: "topbar" }, h("div", { class: "brand" }, h("img", { src: "icons/icon-192.png", alt: "", width: 36, height: 36 }), h("h1", null, "Cá Vàng")), selToggle),
       h("div", { class: "searchbox glass-strong" }, icon("search", 24), input, h("span", { class: "kbd-hint", "aria-hidden": "true" }, "/")),
       areaBox, typeBox, subjBox, timeBox, meta, grid,
     ),
+    selBar, // nằm ngoài .screen: khung có hiệu ứng (transform) sẽ làm "fixed" bị lệch
   );
+  updateSelUi();
 
   listRecords().then((all) => {
     if (!alive) return;

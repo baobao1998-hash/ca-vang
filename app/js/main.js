@@ -1,9 +1,10 @@
-// Khởi động app + router bằng #hash: #/tim · #/them · #/chi-tiet/<id> · #/thung-rac · #/cai-dat
+// Khởi động app + router bằng #hash: #/tim · #/them · #/chi-tiet/<id> · #/thung-rac · #/ho-so · #/cai-dat
 import { h, icon, mount, toast } from "./ui/dom.js";
 import { renderSearch } from "./ui/screen-search.js";
 import { renderAdd, stashImages, stashText } from "./ui/screen-add.js";
 import { renderDetail } from "./ui/screen-detail.js";
 import { renderTrash } from "./ui/screen-trash.js";
+import { renderDossier } from "./ui/screen-dossier.js";
 import { renderSettings } from "./ui/screen-settings.js";
 import { openDb } from "./data/db.js";
 import { listRecords, purgeOld } from "./data/records.js";
@@ -29,7 +30,7 @@ function route() {
   const [, name = "tim", arg] = location.hash.split("/");
   current?.destroy?.();
   current = null;
-  const key = name === "chi-tiet" ? "#/tim" : name === "thung-rac" ? "#/cai-dat" : "#/" + name;
+  const key = name === "chi-tiet" || name === "ho-so" ? "#/tim" : name === "thung-rac" ? "#/cai-dat" : "#/" + name;
   for (const a of tabs.querySelectorAll("a")) {
     if (a.dataset.route === key) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   }
@@ -37,6 +38,7 @@ function route() {
     case "them": current = renderAdd(view); break;
     case "chi-tiet": current = renderDetail(view, decodeURIComponent(arg || "")); break;
     case "thung-rac": current = renderTrash(view); break;
+    case "ho-so": current = renderDossier(view); break;
     case "cai-dat": current = renderSettings(view); break;
     default: current = renderSearch(view);
   }

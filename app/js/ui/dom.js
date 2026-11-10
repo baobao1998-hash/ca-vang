@@ -50,6 +50,8 @@ const ICONS = {
   user: ["M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2", "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"],
   calendar: ["M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z", "M16 2v4", "M8 2v4", "M3 10h18"],
   check: ["M20 6L9 17l-5-5"],
+  up: ["M18 15l-6-6-6 6"],
+  down: ["M6 9l6 6 6-6"],
 };
 
 export function icon(name, size = 20) {

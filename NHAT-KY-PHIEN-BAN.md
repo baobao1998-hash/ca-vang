@@ -2,6 +2,14 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.6.0 · 2026-11-10 · Việc 6.2 — hồ sơ trình bày (in / lưu PDF)
+- **Màn Tìm:** nút “Chọn nhiều” (góc trên) hoặc **nhấn giữ một thẻ** trên điện thoại → tick nhiều bằng chứng; thanh dưới hiện “Đã chọn N”, “Chọn tất cả N kết quả đang lọc”, “Bỏ chọn”, “Tạo hồ sơ (N)”.
+- **Màn Hồ sơ (`#/ho-so`):** ô Tiêu đề (tự gợi ý từ tình huống/đối tượng chung), ô Ghi chú trình bày, đổi thứ tự bằng nút lên/xuống, bỏ từng mục (×), công tắc “Kèm chữ đọc từ ảnh”. Nút “Xem trước” và “Lưu PDF / In”.
+- **Bản in:** khổ A4, có trang bìa (tiêu đề, ngày lập, ghi chú, mục lục) rồi mỗi bằng chứng một trang: tiêu đề, loại, ngày trên giấy tờ, mã hàng, số lô, đối tượng, tình huống, ghi chú + ảnh ĐẦY ĐỦ vừa trang (ảnh dọc cao cũng vừa), số trang ở chân. Tên file PDF gợi ý lấy theo tiêu đề. Không dùng thư viện ngoài (dùng chức năng in của trình duyệt).
+- Ảnh đầy đủ chưa có trên máy → tải từ Google Drive trước khi in (có thanh tiến độ). Không tải được → dùng ảnh nhỏ và ghi chú rõ “đây là ảnh nhỏ” ngay trong hồ sơ. Hồ sơ không lưu lại; không đổi cấu trúc dữ liệu.
+- Sửa nhỏ ngoài phạm vi ghi trong bảng việc (cần để chạy): `main.js` (thêm đường dẫn `#/ho-so`), `sw.js` (danh sách SHELL), `docs/KIEN-TRUC.md` (1 dòng liệt kê file).
+- **ĐÃ thử thật** (Chrome máy tính, khung xem thử + 4 bằng chứng GIẢ LẬP đã xoá sau khi thử): chọn nhiều, chọn tất cả, tạo hồ sơ, đổi thứ tự, xem trước; khổ điện thoại 375px; nhấn giữ thẻ bằng sự kiện cảm ứng GIẢ LẬP; **in ra PDF thật bằng Chrome (A4, 4 trang)** và xem từng trang: bìa + mục lục + 3 trang ảnh vừa khổ, số trang đúng. **CHƯA thử:** nhấn giữ bằng ngón tay thật, hộp thoại “Lưu PDF” trên S25+ (Chrome Android), tải ảnh đầy đủ từ Drive thật khi in, máy in giấy.
+
 ## v0.5.4 · 2026-11-10 · Việc 6.5
 - Điện thoại: thông báo ("Đã lưu bằng chứng"...) không còn che nút quay lại/tiêu đề ở trên — nay hiện ngay trên thanh menu dưới, nhỏ gọn hơn. Máy tính giữ nguyên (đáy màn hình). Đã thử khổ 375px trong khung xem thử.
 

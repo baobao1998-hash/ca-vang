@@ -72,6 +72,7 @@ app/
       screen-search.js     ← màn chính: ô tìm + danh sách kết quả
       screen-add.js        ← thêm bằng chứng (ảnh/chụp/dán/text)
       screen-detail.js     ← xem chi tiết, sửa, xoá (vào thùng rác)
+      screen-dossier.js    ← Hồ sơ trình bày: chọn nhiều ở màn Tìm → #/ho-so → in/lưu PDF (A4, không lưu hồ sơ)
       screen-settings.js   ← key Gemini, đăng nhập Drive, sao lưu, phiên bản
       components/          ← chip, card, sheet, tag-input...
   vendor/                  ← thư viện tải sẵn + README ghi nguồn/phiên bản

@@ -18,7 +18,7 @@ const SHELL = [
   "js/data/db.js", "js/data/records.js", "js/data/search.js", "js/data/settings.js",
   "js/services/auth.js", "js/services/backup.js", "js/services/drive.js", "js/services/gemini.js", "js/services/image.js", "js/services/prefetch.js", "js/services/sync.js",
   "js/ui/common.js", "js/ui/dom.js", "js/ui/ocr-queue.js", "js/ui/updater.js",
-  "js/ui/screen-add.js", "js/ui/screen-detail.js", "js/ui/screen-search.js", "js/ui/screen-settings.js", "js/ui/screen-trash.js",
+  "js/ui/screen-add.js", "js/ui/screen-detail.js", "js/ui/screen-dossier.js", "js/ui/screen-search.js", "js/ui/screen-settings.js", "js/ui/screen-trash.js",
   "js/ui/components/date-input.js", "js/ui/components/doc-type.js", "js/ui/components/lightbox.js", "js/ui/components/tag-input.js",
   "vendor/minisearch.js",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png",
