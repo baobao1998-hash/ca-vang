@@ -70,10 +70,11 @@ async function takeShared() {
   try {
     const c = await caches.open("cavang-share");
     const files = [];
-    let text = "";
+    let text = "", debug = "";
     for (const req of await c.keys()) {
       const res = await c.match(req);
-      if (req.url.endsWith("/share/text")) text = await res.text();
+      if (req.url.endsWith("/share/debug")) { debug = await res.text(); }
+      else if (req.url.endsWith("/share/text")) text = await res.text();
       else {
         const blob = await res.blob();
         files.push(new File([blob], decodeURIComponent(res.headers.get("X-Name") || "") || "image", { type: blob.type || "image/jpeg" }));
@@ -82,7 +83,11 @@ async function takeShared() {
     }
     if (files.length) stashImages(files);
     if (text) stashText(text);
-    if (!files.length && !text) toast("Không nhận được nội dung chia sẻ. Hãy thử chia sẻ lại hoặc chọn ảnh trong app.", "error", 5000);
+    if (!files.length && !text) {
+      console.warn("Chia sẻ trống:", debug);
+      // Kèm thông tin kỹ thuật ngắn để chủ dự án chụp màn hình gửi lại khi cần.
+      toast("Không nhận được nội dung chia sẻ. Hãy thử chia sẻ lại hoặc chọn ảnh trong app. [" + (debug || "không có dữ liệu").slice(0, 160) + "]", "error", 12000);
+    }
   } catch (err) { console.warn("Không đọc được nội dung chia sẻ:", err); }
 }
 

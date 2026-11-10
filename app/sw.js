@@ -41,23 +41,32 @@ self.addEventListener("activate", (e) => {
 // Ở đây cất tạm vào cache "cavang-share" rồi chuyển hướng về app (main.js sẽ lấy ra, mở màn Thêm).
 const SHARE_CACHE = "cavang-share";
 async function handleShare(req) {
+  const debug = { type: req.headers.get("content-type") || "", entries: [], error: "" };
   try {
     const fd = await req.formData();
     const c = await caches.open(SHARE_CACHE);
     for (const k of await c.keys()) await c.delete(k);
     let i = 0;
-    for (const f of fd.getAll("media")) {
-      if (typeof f === "string") continue;
-      await c.put(new Request(new URL("share/file-" + i++, self.registration.scope).href),
-        new Response(f, { headers: { "Content-Type": f.type || "image/jpeg", "X-Name": encodeURIComponent(f.name || "") } }));
-    }
     const parts = [];
-    for (const k of ["title", "text", "url"]) {
-      const v = fd.get(k);
-      if (typeof v === "string" && v.trim() && !parts.includes(v.trim())) parts.push(v.trim());
+    // Nhận mọi tệp gửi tới, bất kể tên trường (một số máy đặt tên khác "media").
+    for (const [key, v] of fd.entries()) {
+      if (typeof v === "string") {
+        debug.entries.push(key + "=text");
+        if (["title", "text", "url"].includes(key) && v.trim() && !parts.includes(v.trim())) parts.push(v.trim());
+        continue;
+      }
+      debug.entries.push(`${key}=${v.type || "?"}:${v.size}`);
+      if (!v.size || (v.type && !v.type.startsWith("image/"))) continue;
+      await c.put(new Request(new URL("share/file-" + i++, self.registration.scope).href),
+        new Response(v, { headers: { "Content-Type": v.type || "image/jpeg", "X-Name": encodeURIComponent(v.name || "") } }));
     }
     if (parts.length) await c.put(new Request(new URL("share/text", self.registration.scope).href), new Response(parts.join("\n"), { headers: { "Content-Type": "text/plain;charset=utf-8" } }));
-  } catch (err) { console.warn("Không nhận được nội dung chia sẻ:", err); }
+    await c.put(new Request(new URL("share/debug", self.registration.scope).href), new Response(JSON.stringify(debug)));
+  } catch (err) {
+    debug.error = String(err && err.message || err);
+    try { const c = await caches.open(SHARE_CACHE); await c.put(new Request(new URL("share/debug", self.registration.scope).href), new Response(JSON.stringify(debug))); } catch {}
+    console.warn("Không nhận được nội dung chia sẻ:", err);
+  }
   return Response.redirect(new URL("./?shared=1#/them", self.registration.scope).href, 303);
 }
 
