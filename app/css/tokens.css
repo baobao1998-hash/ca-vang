@@ -1,0 +1,63 @@
+/* Biến màu, bo góc, độ mờ. Sáng/tối theo hệ thống. */
+:root {
+  color-scheme: light dark;
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --text: #172033;
+  --text-soft: #4a566d;
+  --text-faint: #6b768c;
+  --accent: #e8730c;          /* cam vàng "cá vàng" */
+  --accent-2: #f5a524;
+  --accent-text: #ffffff;
+  --danger: #d6293e;
+  --ok: #138a52;
+
+  --bg-1: #ffe9c7;
+  --bg-2: #ffd1c4;
+  --bg-3: #cfe3ff;
+  --blob-a: rgba(255, 170, 70, .75);
+  --blob-b: rgba(255, 120, 140, .55);
+  --blob-c: rgba(110, 170, 255, .6);
+
+  --glass: rgba(255, 255, 255, .42);
+  --glass-strong: rgba(255, 255, 255, .62);
+  --glass-edge: rgba(255, 255, 255, .75);
+  --glass-edge-dark: rgba(23, 32, 51, .08);
+  --shadow: 0 8px 32px rgba(60, 40, 20, .14), 0 1px 3px rgba(60, 40, 20, .08);
+  --blur: 24px;
+  --field: rgba(255, 255, 255, .55);
+  --field-border: rgba(23, 32, 51, .14);
+
+  --r-sm: 14px;
+  --r-md: 20px;
+  --r-lg: 28px;
+  --tab-h: 68px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f2f4fa;
+    --text-soft: #c3c9d9;
+    --text-faint: #9aa3b8;
+    --accent: #ffa63d;
+    --accent-2: #ffcb5c;
+    --accent-text: #2a1700;
+    --danger: #ff6b7d;
+    --ok: #52d49a;
+
+    --bg-1: #1a1424;
+    --bg-2: #14172b;
+    --bg-3: #0f1c2e;
+    --blob-a: rgba(255, 140, 40, .38);
+    --blob-b: rgba(220, 70, 120, .34);
+    --blob-c: rgba(60, 120, 255, .38);
+
+    --glass: rgba(255, 255, 255, .09);
+    --glass-strong: rgba(34, 36, 56, .66);
+    --glass-edge: rgba(255, 255, 255, .22);
+    --glass-edge-dark: rgba(0, 0, 0, .35);
+    --shadow: 0 10px 36px rgba(0, 0, 0, .45), 0 1px 3px rgba(0, 0, 0, .4);
+    --field: rgba(255, 255, 255, .08);
+    --field-border: rgba(255, 255, 255, .2);
+  }
+}
