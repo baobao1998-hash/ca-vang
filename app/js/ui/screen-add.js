@@ -14,6 +14,9 @@ import { saveRecord, listRecords } from "../data/records.js";
 // Ảnh dán ở màn khác được chuyển sang đây (xem main.js).
 let stash = [];
 export function stashImages(files) { stash = stash.concat(files); }
+// Văn bản được chia sẻ từ app khác (Android "Chia sẻ → Cá Vàng") → điền sẵn vào ô văn bản.
+let stashedText = "";
+export function stashText(text) { stashedText = text; }
 
 export function renderAdd(root) {
   let alive = true;
@@ -263,6 +266,7 @@ export function renderAdd(root) {
 
   drawAi();
   if (stash.length) { const f = stash; stash = []; take(f); }
+  if (stashedText) { pasteText.value = stashedText; stashedText = ""; drawAi(); if (autoOn()) analyzeTextNow(); }
 
   return {
     destroy: () => { alive = false; document.removeEventListener("paste", onPaste); for (const p of pics) URL.revokeObjectURL(p.url); },

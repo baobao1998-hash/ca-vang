@@ -1,7 +1,7 @@
 // Khởi động app + router bằng #hash: #/tim · #/them · #/chi-tiet/<id> · #/thung-rac · #/cai-dat
 import { h, icon, mount, toast } from "./ui/dom.js";
 import { renderSearch } from "./ui/screen-search.js";
-import { renderAdd, stashImages } from "./ui/screen-add.js";
+import { renderAdd, stashImages, stashText } from "./ui/screen-add.js";
 import { renderDetail } from "./ui/screen-detail.js";
 import { renderTrash } from "./ui/screen-trash.js";
 import { renderSettings } from "./ui/screen-settings.js";
@@ -63,9 +63,33 @@ document.addEventListener("paste", (e) => {
   location.hash = "#/them";
 });
 
+// Lấy ảnh/văn bản vừa được chia sẻ vào app (service worker cất trong cache "cavang-share") → chuyển sang màn Thêm.
+async function takeShared() {
+  if (!new URLSearchParams(location.search).has("shared")) return;
+  history.replaceState(null, "", location.pathname + "#/them"); // bỏ "?shared=1" để tải lại trang không nhận lần nữa
+  try {
+    const c = await caches.open("cavang-share");
+    const files = [];
+    let text = "";
+    for (const req of await c.keys()) {
+      const res = await c.match(req);
+      if (req.url.endsWith("/share/text")) text = await res.text();
+      else {
+        const blob = await res.blob();
+        files.push(new File([blob], decodeURIComponent(res.headers.get("X-Name") || "") || "image", { type: blob.type || "image/jpeg" }));
+      }
+      await c.delete(req);
+    }
+    if (files.length) stashImages(files);
+    if (text) stashText(text);
+    if (!files.length && !text) toast("Không nhận được nội dung chia sẻ. Hãy thử chia sẻ lại hoặc chọn ảnh trong app.", "error", 5000);
+  } catch (err) { console.warn("Không đọc được nội dung chia sẻ:", err); }
+}
+
 async function start() {
   try {
     await openDb();
+    await takeShared();
     await purgeOld(); // tự xoá hẳn bản ghi nằm trong thùng rác quá 30 ngày
     initSearch(await listRecords());
     on("record:saved", ({ record }) => indexRecord(record));

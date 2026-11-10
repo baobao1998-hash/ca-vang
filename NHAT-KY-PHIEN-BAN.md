@@ -2,6 +2,12 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.5.0 · 2026-11-10 · GĐ5 — Việc 5.1: đưa lên mạng + cài trên Android
+- GitHub Actions (`.github/workflows/pages.yml`): mỗi lần đẩy lên nhánh `main` tự đưa thư mục `app/` lên GitHub Pages.
+- Mọi đường dẫn trong app đã là tương đối nên chạy đúng dưới `https://<user>.github.io/<repo>/` (manifest `start_url`/`scope` = `./`, service worker đăng ký tương đối).
+- `share_target` (POST multipart: ảnh + chữ) trong manifest; `sw.js` nhận, cất tạm vào cache `cavang-share`, chuyển về `./?shared=1#/them`; `main.js` lấy ra, màn Thêm mở sẵn ảnh/chữ và Gemini tự đọc. `sw.js` giờ chỉ xoá cache vỏ app cũ (`cavang-shell-v*`), không đụng cache chia sẻ.
+- ĐÃ thử thật (Chrome máy tính, localhost): giả lập chia sẻ 1 ảnh + 1 đoạn chữ qua POST → vào đúng màn Thêm, cache dọn sạch.
+
 ## v0.4.0 · 2026-11-10 · GĐ4 — Việc 4.1: đồng bộ Google Drive
 - Đăng nhập Google (Google Identity Services, quyền `drive.file`: app chỉ thấy file do chính nó tạo). Token chỉ giữ trong bộ nhớ, không lưu ra ổ đĩa; không dùng client secret. Client ID công khai nằm ở `core/config.js`.
 - Drive: `CaVang/records/<id>.json` (mỗi bằng chứng 1 file), `CaVang/files/YYYY-MM/<id>.jpg` + `<id>.thumb.jpg`, `CaVang/snapshots/index-YYYY-MM-DD.json` (mỗi ngày 1 bản, giữ 30 bản).
