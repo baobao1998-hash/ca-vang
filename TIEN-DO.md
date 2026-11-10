@@ -22,7 +22,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 ## GĐ2 — Ghép nối: app chạy thật trên 1 máy (offline) → v0.2.0
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
-| 2.1 | Nối UI với dữ liệu thật: thêm/sửa/xoá mềm/thùng rác, tìm tức thì, bộ lọc chip, xem ảnh phóng to, dán ảnh Ctrl+V | `app/js/ui/*`, `app/js/main.js`, `app/css/*` | ⬜ CHƯA LÀM |
+| 2.1 | Nối UI với dữ liệu thật: thêm/sửa/xoá mềm/thùng rác, tìm tức thì, bộ lọc chip, xem ảnh phóng to, dán ảnh Ctrl+V | `app/js/ui/*`, `app/js/main.js`, `app/css/*` | 🔒 ĐANG LÀM — 2026-11-10 |
 
 ## GĐ3 — Đọc chữ trên ảnh bằng Gemini → v0.3.0
 | Mã | Việc | File được sửa | Trạng thái |
