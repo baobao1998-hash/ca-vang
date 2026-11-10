@@ -35,8 +35,8 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 ## GĐ4 — Đồng bộ Google Drive → v0.4.0
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
-| 4.T | 👤 **Việc của chủ dự án:** tạo Google Cloud project + OAuth Client ID (phiên 4.1 sẽ hướng dẫn từng bước) | — | ⬜ CHƯA LÀM |
-| 4.1 | auth.js + drive.js + sync.js + backup.js (snapshot ngày), trạng thái đồng bộ trong UI | `app/js/services/auth.js`, `drive.js`, `sync.js`, `backup.js`, `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/js/core/config.js` | ⬜ CHƯA LÀM |
+| 4.T | 👤 **Việc của chủ dự án:** tạo Google Cloud project + OAuth Client ID (phiên 4.1 sẽ hướng dẫn từng bước) | — | 🔒 ĐANG LÀM — 2026-11-10 |
+| 4.1 | auth.js + drive.js + sync.js + backup.js (snapshot ngày), trạng thái đồng bộ trong UI | `app/js/services/auth.js`, `drive.js`, `sync.js`, `backup.js`, `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/js/core/config.js`, `app/index.html` (chỉ CSP), `app/sw.js` (chỉ SHELL + không chặn request Google), `app/css/*` (chấm trạng thái) | 🔒 ĐANG LÀM — 2026-11-10 |
 
 ## GĐ5 — Đưa lên mạng + cài trên Android → v0.5.0
 | Mã | Việc | File được sửa | Trạng thái |
