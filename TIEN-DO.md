@@ -42,7 +42,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
 | 5.T | 👤 **Việc của chủ dự án:** tạo tài khoản GitHub | — | ⬜ CHƯA LÀM |
-| 5.1 | GitHub repo + GitHub Actions deploy `app/` lên Pages, nút "Chia sẻ → Cá Vàng" trên Android (share_target), cập nhật Client ID/referrer | `.github/*`, `app/manifest.webmanifest`, `app/sw.js`, `app/js/ui/screen-add.js` | ⬜ CHƯA LÀM |
+| 5.1 | GitHub repo + GitHub Actions deploy `app/` lên Pages, nút "Chia sẻ → Cá Vàng" trên Android (share_target), cập nhật Client ID/referrer | `.github/*`, `app/manifest.webmanifest`, `app/sw.js`, `app/index.html`, `app/js/main.js`, `app/js/ui/screen-add.js`, `app/js/core/config.js`, `docs/HUONG-DAN-CHO-CHU.md` | 🔒 ĐANG LÀM — 2026-11-10 |
 
 ## GĐ6 — Hoàn thiện → v1.0.0
 | Mã | Việc | File được sửa | Trạng thái |
