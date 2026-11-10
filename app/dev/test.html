@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cá Vàng — Tự kiểm tra lõi dữ liệu</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 16px; background: #fffaf0; color: #222; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    #summary { font-weight: 700; margin: 8px 0 16px; padding: 10px 14px; border-radius: 10px; background: #eee; }
+    #summary.pass { background: #d8f5d8; }
+    #summary.fail { background: #fbd5d5; }
+    .row { display: flex; gap: 8px; padding: 6px 10px; border-bottom: 1px solid #e6dfcf; }
+    .tag { font-weight: 700; min-width: 48px; }
+    .PASS .tag { color: #1a7f1a; }
+    .FAIL .tag { color: #c0262d; }
+    .detail { color: #666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Cá Vàng — Tự kiểm tra lõi dữ liệu (việc 1.2)</h1>
+  <div>Dùng kho dữ liệu riêng <code>cavang-test</code>, không đụng dữ liệu thật.</div>
+  <div id="summary">Đang chạy…</div>
+  <div id="results"></div>
+  <script type="module" src="./test.js"></script>
+</body>
+</html>
