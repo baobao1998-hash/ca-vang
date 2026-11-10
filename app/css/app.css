@@ -176,6 +176,8 @@ button { font-family: inherit; }
   #view { padding: 96px 28px 60px; }
   #tabs { bottom: auto; top: 16px; width: 440px; height: 56px; padding: 6px 8px; }
   #tabs a { flex-direction: row; gap: 8px; font-size: 14px; }
+  /* Máy tính: menu nằm trên cùng → thông báo xuống góc dưới để không che menu */
+  #toast-box { top: auto; bottom: 24px; }
   #tabs a.tab-add { flex: 1; height: 100%; margin-top: 0; border-width: 1px; box-shadow: none; }
   #tabs a.tab-add span { display: inline; }
   #tabs a.tab-add svg { width: 20px; height: 20px; }

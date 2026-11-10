@@ -2,6 +2,10 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.3.2 · 2026-11-10 · Việc 3.3
+- Thông báo "Đã lưu bằng chứng" trên máy tính không còn che menu Tìm/Thêm/Cài đặt (chuyển xuống đáy màn hình). Điện thoại giữ nguyên (thông báo ở trên, menu ở dưới).
+- Thêm cấu hình xem thử thứ hai `cavang-review` (cổng 5600) để phiên kiểm tra không tranh cổng 5500 với phiên đang code.
+
 ## v0.3.1 · 2026-11-10 · Việc 3.2 — sửa sau v0.3.0
 - NGUYÊN NHÂN lỗi "2 ảnh khác nhau ra y hệt kết quả CO/CQ kim điện cực": khi kiểm thử v0.3.0, phiên làm việc đã gắn một Gemini GIẢ LẬP vào tab xem thử và quên gỡ; tab đó vẫn trả kết quả giả. KHÔNG phải lỗi của app (các chuỗi đó không có trong code app). Đã tải lại hẳn tab, kiểm tra `fetch` là bản gốc rồi thử lại với Gemini thật.
 - Thử Gemini THẬT: ảnh tài liệu PDF → "Tài liệu/Sách", ngày 19/01/2026, Công việc; ảnh đơn Shopee → "Đơn hàng", Cá nhân, đối tượng "Huawei Flagship Store", ngày để trống.

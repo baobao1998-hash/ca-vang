@@ -29,7 +29,8 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 |---|---|---|---|
 | 3.1 | `services/gemini.js` + màn Cài đặt nhập/kiểm tra key + gợi ý thẻ ở màn Thêm + hàng đợi OCR "pending" | `app/js/services/gemini.js`, `app/js/ui/*`, `app/css/*`, `app/index.html` (CSP), `app/js/core/config.js` (danh mục), `docs/KIEN-TRUC.md` (dòng danh mục) | ✅ XONG — v0.3.0 |
 | 3.2 | Sửa sau v0.3.0: bỏ giả lập còn sót khi thử, prompt Gemini trung tính (việc + cá nhân), trường `area` (schema 2), loại mới, sửa service worker + nút "Tải lại bản mới" | `app/js/services/gemini.js`, `app/js/ui/*`, `app/css/*`, `app/js/core/*`, `app/js/data/records.js`, `app/js/data/search.js`, `app/sw.js`, `app/js/main.js` (chỉ dòng đăng ký sw), `docs/KIEN-TRUC.md` | ✅ XONG — v0.3.1 |
-| 3.T | 👤 **Việc của chủ dự án:** tạo Gemini API key (có hướng dẫn) | — | ⬜ CHƯA LÀM |
+| 3.3 | Thông báo "Đã lưu" che menu trên máy tính → chuyển xuống đáy màn hình (máy tính) | `app/css/app.css` | ✅ XONG — v0.3.2 |
+| 3.T | 👤 **Việc của chủ dự án:** tạo Gemini API key (có hướng dẫn) | — | ✅ XONG |
 
 ## GĐ4 — Đồng bộ Google Drive → v0.4.0
 | Mã | Việc | File được sửa | Trạng thái |
