@@ -22,4 +22,8 @@ export const GEMINI_TIMEOUT_MS = 30000;
 // Loại giấy tờ do người dùng tự thêm được lưu ở cài đặt này (mảng chữ).
 export const CUSTOM_DOCTYPES_KEY = "customDocTypes";
 
-export const DOC_TYPES = ["CO/CQ", "Hoá đơn", "Hợp đồng", "Báo giá", "Đơn hàng", "Chứng từ thanh toán", "Tài liệu/Sách", "Email", "Tin nhắn", "Biên bản", "Khác"];
+export const DOC_TYPES = ["CO/CQ", "Hoá đơn", "Hợp đồng", "Báo giá", "Đơn hàng", "Chứng từ thanh toán", "Tài liệu/Sách", "Giấy tờ cá nhân", "Ảnh chụp màn hình", "Email", "Tin nhắn", "Biên bản", "Khác"];
+
+// Lĩnh vực của bằng chứng (schema 2). Bản ghi cũ mặc định "work".
+export const AREAS = [["work", "Công việc"], ["personal", "Cá nhân"]];
+export const AREA_LABEL = Object.fromEntries(AREAS);

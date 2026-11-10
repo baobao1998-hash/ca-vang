@@ -77,7 +77,7 @@ docs/                      ← tài liệu
 scripts/                   ← script PowerShell tiện ích (sao lưu dự án)
 ```
 
-## 4. Mô hình dữ liệu (SCHEMA_VERSION = 1)
+## 4. Mô hình dữ liệu (SCHEMA_VERSION = 2)
 
 ### Bản ghi bằng chứng `Evidence`
 ```js
@@ -91,7 +91,8 @@ scripts/                   ← script PowerShell tiện ích (sao lưu dự án)
 
   // Người dùng nhập (có gợi ý từ Gemini)
   title: "CO/CQ kim điện cực lô 2410",
-  docType: "CO/CQ",         // danh mục: CO/CQ, Hoá đơn, Hợp đồng, Báo giá, Đơn hàng, Chứng từ thanh toán, Tài liệu/Sách, Email, Tin nhắn, Biên bản, Khác (người dùng gõ thêm loại mới được)
+  docType: "CO/CQ",         // danh mục: CO/CQ, Hoá đơn, Hợp đồng, Báo giá, Đơn hàng, Chứng từ thanh toán, Tài liệu/Sách, Giấy tờ cá nhân, Ảnh chụp màn hình, Email, Tin nhắn, Biên bản, Khác (người dùng gõ thêm loại mới được)
+  area: "work",             // lĩnh vực: "work" (Công việc) | "personal" (Cá nhân) — thêm ở schema 2; bản ghi cũ đọc lên mặc định "work"
   itemCodes: ["KDC-0.8"],   // mã hàng
   lotNumbers: ["2410"],     // số lô
   subjects: ["Bệnh viện A"],// ĐỐI TƯỢNG: khách hàng/NCC/người/phòng ban
@@ -146,7 +147,7 @@ scripts/                   ← script PowerShell tiện ích (sao lưu dự án)
 
 ## 6. Gemini (đọc chữ + gợi ý)
 - Gửi ảnh đã nén (base64) + prompt yêu cầu trả JSON:
-  `{ ocrText, title, docType, itemCodes[], lotNumbers[], subjects[], docDate }`
+  `{ ocrText, title, docType, area, itemCodes[], lotNumbers[], subjects[], situations[], docDate }`
   (dùng `responseMimeType: "application/json"` + `responseSchema`).
 - Kết quả chỉ là **gợi ý** → người dùng xác nhận/sửa rồi mới lưu.
 - Không có mạng/hết hạn mức → lưu bản ghi với `ocrStatus: "pending"`, tự thử lại sau.
@@ -167,7 +168,7 @@ openDb() -> Promise<IDBDatabase>
 dbGet(store, key), dbPut(store, value), dbDelete(store, key), dbAll(store) -> Promise
 // data/records.js
 saveRecord(partial, {blob}?) -> Promise<Evidence>   // tạo mới hoặc cập nhật, set updatedAt, dirty
-getRecord(id) -> Promise<Evidence|null>
+getRecord(id) -> Promise<Evidence|null>   // mọi hàm đọc đều chuyển bản ghi cũ lên schema 2 (migrateRecord)
 listRecords({includeDeleted}?) -> Promise<Evidence[]>
 softDelete(id), restore(id), purgeOld(days=30)
 getThumbUrl(id), getFullBlob(id)
@@ -182,7 +183,7 @@ getSetting(key, fallback), setSetting(key, value)
 compressImage(fileOrBlob, {maxSide=2000, quality=0.85}) -> Promise<{blob,width,height}>
 makeThumb(blob, 320) -> Promise<Blob>
 // services/gemini.js
-analyzeImage(blob) -> Promise<{ocrText,title,docType,itemCodes,lotNumbers,subjects,docDate}>
+analyzeImage(blob) -> Promise<{ocrText,title,docType,area,itemCodes,lotNumbers,subjects,situations,docDate}>
 analyzeText(text) -> Promise<cùng dạng, ocrText="">
 testKey(key) -> Promise<boolean>
 // services/auth.js

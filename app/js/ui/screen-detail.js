@@ -1,6 +1,7 @@
 // Màn Chi tiết: ảnh lớn (bấm để phóng to), thông tin, Sửa / Xoá (vào thùng rác).
 import { h, icon, mount, toast } from "./dom.js";
 import { formatDate, collectValues } from "./common.js";
+import { AREAS, AREA_LABEL } from "../core/config.js";
 import { dateInput } from "./components/date-input.js";
 import { docTypeInput } from "./components/doc-type.js";
 import { openLightbox } from "./components/lightbox.js";
@@ -75,7 +76,7 @@ export function renderDetail(root, id) {
           h("div", { class: "info glass" },
             h("h2", null, r.title),
             h("dl", { class: "kv-list" },
-              row("Loại giấy tờ", r.docType), row("Mã hàng", r.itemCodes), row("Số lô", r.lotNumbers),
+              row("Loại giấy tờ", r.docType), row("Lĩnh vực", AREA_LABEL[r.area] || "Công việc"), row("Mã hàng", r.itemCodes), row("Số lô", r.lotNumbers),
               row("Đối tượng", r.subjects), row("Tình huống", r.situations),
               row("Ngày trên giấy tờ", r.docDate && formatDate(r.docDate)), row("Đã lưu lúc", formatDate(r.createdAt)), row("Ghi chú", r.note),
             ),
@@ -104,6 +105,7 @@ export function renderDetail(root, id) {
     const fTitle = h("input", { class: "field", id: "e-title", value: r.title });
     const fType = docTypeInput({ id: "e-type", value: r.docType });
     const fDate = dateInput({ id: "e-date", value: r.docDate || "" });
+    const fArea = h("select", { class: "field", id: "e-area" }, ...AREAS.map(([v, t]) => h("option", { value: v, selected: v === (r.area || "work") }, t)));
     const fNote = h("textarea", { class: "field", id: "e-note", rows: 3 }); fNote.value = r.note || "";
     const items = tagInput({ name: "e-ma", label: "Mã hàng", values: r.itemCodes, suggestions: sug("itemCodes") });
     const lots = tagInput({ name: "e-lo", label: "Số lô", values: r.lotNumbers, suggestions: sug("lotNumbers") });
@@ -122,7 +124,7 @@ export function renderDetail(root, id) {
       saveBtn.disabled = true;
       try {
         r = await saveRecord({
-          id, title, docType: fType.commit(), docDate, note: fNote.value.trim(),
+          id, title, docType: fType.commit(), area: fArea.value, docDate, note: fNote.value.trim(),
           itemCodes: items.getValues(), lotNumbers: lots.getValues(), subjects: subjects.getValues(), situations: situations.getValues(),
           ...(fText ? { text: fText.value } : {}),
         });
@@ -133,6 +135,7 @@ export function renderDetail(root, id) {
       h("div", { class: "form-grid two" },
         h("div", { class: "span2" }, h("label", { class: "label", for: "e-title" }, "Tiêu đề"), fTitle),
         h("div", null, h("label", { class: "label", for: "e-type" }, "Loại giấy tờ"), fType.el),
+        h("div", null, h("label", { class: "label", for: "e-area" }, "Lĩnh vực"), fArea),
         h("div", null, h("label", { class: "label", for: "e-date" }, "Ngày trên giấy tờ"), fDate.el),
         h("div", null, items), h("div", null, lots), h("div", null, subjects), h("div", null, situations),
         fText && h("div", { class: "span2" }, h("label", { class: "label", for: "e-text" }, "Nội dung"), fText),

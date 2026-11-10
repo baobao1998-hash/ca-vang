@@ -9,6 +9,7 @@ import { openDb } from "./data/db.js";
 import { listRecords, purgeOld } from "./data/records.js";
 import { initSearch, indexRecord, unindexRecord } from "./data/search.js";
 import { on } from "./core/events.js";
+import { APP_VERSION } from "./core/version.js";
 import { readClipboardImage } from "./services/image.js";
 
 const view = document.getElementById("view");
@@ -84,5 +85,7 @@ start().catch((err) => { console.error(err); toast("Có lỗi khi khởi động
 
 // Offline: đăng ký service worker
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch((err) => console.warn("Không bật được chế độ offline:", err));
+  navigator.serviceWorker.register("sw.js?v=" + APP_VERSION)
+    .catch(() => navigator.serviceWorker.register("sw.js")) // dự phòng nếu trình duyệt chặn địa chỉ có "?v="
+    .catch((err) => console.warn("Không bật được chế độ offline:", err));
 }

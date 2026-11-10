@@ -59,14 +59,15 @@ export function indexRecord(record) {
   indexed.add(record.id);
 }
 
-// filters: { docType, subject, from, to }  (from/to dạng "YYYY-MM-DD", so với docDate hoặc ngày tạo)
+// filters: { docType, subject, area, from, to }  (from/to dạng "YYYY-MM-DD", so với docDate hoặc ngày tạo)
 export function search(query, { filters } = {}) {
   const q = (query || "").trim();
   if (!q) return [];
   const f = filters || {};
-  const filter = (f.docType || f.subject || f.from || f.to)
+  const filter = (f.docType || f.subject || f.area || f.from || f.to)
     ? (r) => {
         if (f.docType && r.docType !== f.docType) return false;
+        if (f.area && (r.area || "work") !== f.area) return false;
         if (f.subject && !(r.subjects || []).includes(f.subject)) return false;
         const d = r.docDate || (r.createdAt || "").slice(0, 10);
         if (f.from && d < f.from) return false;

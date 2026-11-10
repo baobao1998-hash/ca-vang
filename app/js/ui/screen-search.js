@@ -4,10 +4,10 @@ import { startOcrQueue } from "./ocr-queue.js";
 import { getDocTypes, formatDate, highlight, thumbImg, daysAgoIso, collectValues } from "./common.js";
 import { listRecords } from "../data/records.js";
 import { search } from "../data/search.js";
-import { SEARCH_DEBOUNCE_MS } from "../core/config.js";
+import { AREAS, SEARCH_DEBOUNCE_MS } from "../core/config.js";
 
 // Giữ lại cách tìm khi quay lại từ màn Chi tiết.
-const state = { q: "", type: "", subject: "", days: 0 };
+const state = { q: "", type: "", subject: "", area: "", days: 0 };
 const TIME_CHIPS = [[0, "Mọi lúc"], [7, "7 ngày"], [30, "30 ngày"], [365, "1 năm"]];
 
 function card(r, q) {
@@ -37,6 +37,7 @@ export function renderSearch(root) {
     class: "field", id: "q", type: "search", placeholder: "Tìm mã hàng, đối tượng, tình huống…",
     autocomplete: "off", "aria-label": "Tìm bằng chứng", value: state.q,
   });
+  const areaBox = h("div", { class: "chips", role: "group", "aria-label": "Lọc theo lĩnh vực" });
   const typeBox = h("div", { class: "chips", role: "group", "aria-label": "Lọc theo loại giấy tờ" });
   const subjBox = h("div", { class: "chips", role: "group", "aria-label": "Lọc theo đối tượng" });
   const timeBox = h("div", { class: "chips", role: "group", "aria-label": "Lọc theo thời gian" });
@@ -47,8 +48,10 @@ export function renderSearch(root) {
 
   function drawChips() {
     const none = !records.length;
-    typeBox.hidden = subjBox.hidden = timeBox.hidden = none;
+    areaBox.hidden = typeBox.hidden = subjBox.hidden = timeBox.hidden = none;
     if (none) return;
+    areaBox.replaceChildren(h("span", { class: "chip-label" }, "Lĩnh vực"), chip("Tất cả", !state.area, () => { state.area = ""; refresh(); }),
+      ...AREAS.map(([v, t]) => chip(t, state.area === v, () => { state.area = state.area === v ? "" : v; refresh(); })));
     const presentTypes = new Set(records.map((r) => r.docType));
     const types = [...new Set([...getDocTypes(), ...presentTypes])].filter((t) => presentTypes.has(t) || state.type === t);
     typeBox.replaceChildren(chip("Tất cả loại", !state.type, () => { state.type = ""; refresh(); }),
@@ -62,6 +65,7 @@ export function renderSearch(root) {
 
   function matches(r) {
     if (state.type && r.docType !== state.type) return false;
+    if (state.area && (r.area || "work") !== state.area) return false;
     if (state.subject && !r.subjects.includes(state.subject)) return false;
     if (state.days && (r.docDate || r.createdAt.slice(0, 10)) < daysAgoIso(state.days)) return false;
     return true;
@@ -69,10 +73,10 @@ export function renderSearch(root) {
 
   function drawResults() {
     const q = state.q.trim();
-    const filtering = q || state.type || state.subject || state.days;
+    const filtering = q || state.area || state.type || state.subject || state.days;
     let list;
     if (q) {
-      const filters = { docType: state.type, subject: state.subject, from: state.days ? daysAgoIso(state.days) : "" };
+      const filters = { area: state.area, docType: state.type, subject: state.subject, from: state.days ? daysAgoIso(state.days) : "" };
       list = search(q, { filters }).map((x) => byId.get(x.id)).filter(Boolean);
     } else {
       list = records.filter(matches).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -105,7 +109,7 @@ export function renderSearch(root) {
     h("section", { class: "screen" },
       h("div", { class: "topbar" }, h("div", { class: "brand" }, h("img", { src: "icons/icon-192.png", alt: "", width: 36, height: 36 }), h("h1", null, "Cá Vàng"))),
       h("div", { class: "searchbox glass-strong" }, icon("search", 24), input, h("span", { class: "kbd-hint", "aria-hidden": "true" }, "/")),
-      typeBox, subjBox, timeBox, meta, grid,
+      areaBox, typeBox, subjBox, timeBox, meta, grid,
     ),
   );
 

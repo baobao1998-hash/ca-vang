@@ -2,6 +2,14 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.3.1 · 2026-11-10 · Việc 3.2 — sửa sau v0.3.0
+- NGUYÊN NHÂN lỗi "2 ảnh khác nhau ra y hệt kết quả CO/CQ kim điện cực": khi kiểm thử v0.3.0, phiên làm việc đã gắn một Gemini GIẢ LẬP vào tab xem thử và quên gỡ; tab đó vẫn trả kết quả giả. KHÔNG phải lỗi của app (các chuỗi đó không có trong code app). Đã tải lại hẳn tab, kiểm tra `fetch` là bản gốc rồi thử lại với Gemini thật.
+- Thử Gemini THẬT: ảnh tài liệu PDF → "Tài liệu/Sách", ngày 19/01/2026, Công việc; ảnh đơn Shopee → "Đơn hàng", Cá nhân, đối tượng "Huawei Flagship Store", ngày để trống.
+- Prompt Gemini trung tính (công việc lẫn cá nhân), bỏ ví dụ y tế. Thêm loại "Giấy tờ cá nhân", "Ảnh chụp màn hình".
+- Thêm trường Lĩnh vực `area` (Công việc / Cá nhân): Gemini đoán, sửa được ở màn Thêm/Sửa, có chip lọc ở màn Tìm. Cấu trúc dữ liệu lên SCHEMA 2; bản ghi cũ đọc lên mặc định "Công việc" (`migrateRecord`).
+- Service worker: danh sách file offline đúng với file hiện có (bỏ `ui/mock.js`, đã xoá), tên cache gắn với phiên bản app, có mạng thì luôn hỏi lại máy chủ để lấy bản mới. Cài đặt: nút "Kiểm tra bản mới" và "Tải lại bản mới".
+- Ghi chú: cửa sổ xem thử của Claude không chạy ổn service worker (lỗi khi tải sw.js), nên phần "Tải lại bản mới" CHƯA thử trọn vẹn; đã kiểm tra danh sách file offline (34/34 tải được) và nút báo đúng khi chưa có service worker. Máy đang dùng bản cũ có thể cần đóng hết tab Cá Vàng rồi mở lại một lần để nhận bản mới.
+
 ## v0.3.0 · 2026-11-10 · GĐ3 — Việc 3.1: máy tự đọc chữ và điền các ô (Gemini)
 - `services/gemini.js`: gọi Gemini bằng REST, trả JSON có cấu trúc, tối đa 30 giây, báo lỗi tiếng Việt (sai key / hết hạn mức / mất mạng / model sai). Model mặc định đổi sang `gemini-3.5-flash-lite` vì Google đã ngừng `gemini-2.5-flash` (tra tài liệu ngày 2026-11-10); đổi được trong Cài đặt.
 - Cài đặt: ô key (ẩn ký tự), "Kiểm tra key", chọn model, công tắc "Tự đọc chữ khi thêm ảnh" (mặc định bật), "Đọc lại các ảnh chưa đọc".

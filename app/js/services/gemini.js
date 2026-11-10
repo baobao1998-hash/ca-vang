@@ -82,13 +82,14 @@ const SCHEMA = {
     ocrText: { type: "string", description: "Toàn bộ chữ đọc được trên ảnh, giữ xuống dòng" },
     title: { type: "string", description: "Tiêu đề ngắn gọn, dễ tìm" },
     docType: { type: "string" },
+    area: { type: "string", enum: ["work", "personal"], description: "work = công việc, personal = cá nhân/gia đình" },
     docDate: { type: "string", description: "Ngày trên giấy tờ dạng YYYY-MM-DD, không có thì để chuỗi rỗng" },
     itemCodes: { type: "array", items: { type: "string" } },
     lotNumbers: { type: "array", items: { type: "string" } },
     subjects: { type: "array", items: { type: "string" } },
     situations: { type: "array", items: { type: "string" } },
   },
-  required: ["ocrText", "title", "docType", "docDate", "itemCodes", "lotNumbers", "subjects", "situations"],
+  required: ["ocrText", "title", "docType", "area", "docDate", "itemCodes", "lotNumbers", "subjects", "situations"],
 };
 
 function docTypeList() {
@@ -99,16 +100,17 @@ function docTypeList() {
 function buildPrompt(isImage) {
   const types = docTypeList().join(", ");
   return [
-    isImage ? "Đây là ảnh một giấy tờ / tài liệu / ảnh chụp màn hình (thường tiếng Việt hoặc tiếng Anh). Hãy đọc kỹ rồi trả về JSON." : "Đây là một đoạn văn bản (email, tin nhắn, tài liệu). Hãy phân tích rồi trả về JSON.",
+    isImage ? "Đây là ảnh một giấy tờ, tài liệu, đơn hàng, tin nhắn hoặc ảnh chụp màn hình (tiếng Việt hoặc tiếng Anh). Người dùng lưu để tìm lại sau, cho cả công việc lẫn đời sống cá nhân. Hãy đọc kỹ rồi trả về JSON." : "Đây là một đoạn văn bản (email, tin nhắn, tài liệu). Người dùng lưu để tìm lại sau, cho cả công việc lẫn đời sống cá nhân. Hãy phân tích rồi trả về JSON.",
     isImage ? "- ocrText: chép lại toàn bộ chữ đọc được, giữ xuống dòng, không bịa thêm." : "- ocrText: luôn để chuỗi rỗng.",
-    "- title: tiêu đề ngắn (dưới 80 ký tự) nêu rõ đây là gì, ví dụ \"CO/CQ kim điện cực lô 2410\".",
-    `- docType: chọn ĐÚNG MỘT loại trong danh sách: ${types}. Nếu không loại nào hợp, đề xuất một tên loại mới ngắn gọn (tiếng Việt, tối đa 4 từ).`,
+    "- title: tiêu đề ngắn (dưới 80 ký tự) nêu rõ đây là gì, dựa đúng vào nội dung thấy được.",
+    `- docType: chọn ĐÚNG MỘT loại trong danh sách theo nội dung: ${types}. Chỉ chọn "Ảnh chụp màn hình" khi không xác định được loại cụ thể hơn. Nếu không loại nào hợp, đề xuất một tên loại mới ngắn gọn (tiếng Việt, tối đa 4 từ).`,
+    "- area: \"work\" nếu liên quan công việc/kinh doanh/học tập nghề nghiệp, \"personal\" nếu là việc riêng, mua sắm cá nhân, gia đình, giấy tờ tuỳ thân. Không chắc thì chọn \"work\".",
     "- docDate: ngày ghi trên giấy tờ (không phải hôm nay), định dạng YYYY-MM-DD. Không thấy thì để rỗng. Ngày Việt Nam viết ngày/tháng/năm.",
-    "- itemCodes: mã hàng / mã sản phẩm / model (ví dụ KDC-0.8), giữ nguyên cách viết.",
-    "- lotNumbers: số lô (LOT, Batch).",
-    "- subjects: tên khách hàng, nhà cung cấp, bệnh viện, người hoặc công ty liên quan.",
-    "- situations: CHỈ đề xuất khi suy ra được rõ việc này dùng cho gì (ví dụ tên gói thầu, đơn hàng); không chắc thì để mảng rỗng.",
-    "Không có thông tin nào thì để chuỗi rỗng hoặc mảng rỗng. Không đoán bừa.",
+    "- itemCodes: mã hàng, mã sản phẩm, model, mã đơn hàng, số hoá đơn / số chứng từ có trong nội dung; giữ nguyên cách viết.",
+    "- lotNumbers: số lô (LOT, Batch), nếu có.",
+    "- subjects: người, cửa hàng, công ty hoặc tổ chức liên quan (người bán, người mua, khách hàng, nhà cung cấp, cơ quan ban hành), ghi đúng tên như trong nội dung.",
+    "- situations: CHỈ đề xuất khi suy ra được rõ việc này dùng cho gì; không chắc thì để mảng rỗng.",
+    "Chỉ dùng thông tin thấy được trong nội dung. Không có thì để chuỗi rỗng hoặc mảng rỗng. Không đoán bừa, không lấy ví dụ nào làm dữ liệu.",
   ].join("\n");
 }
 
@@ -159,6 +161,7 @@ function normalize(raw, isImage) {
     subjects: cleanList(raw.subjects),
     situations: cleanList(raw.situations),
     docDate: cleanDate(raw.docDate),
+    area: raw.area === "personal" ? "personal" : "work",
   };
 }
 

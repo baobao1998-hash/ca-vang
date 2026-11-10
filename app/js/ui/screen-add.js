@@ -2,6 +2,7 @@
 import { h, icon, mount, toast } from "./dom.js";
 import { collectValues, formatDate } from "./common.js";
 import { tagInput } from "./components/tag-input.js";
+import { AREAS } from "../core/config.js";
 import { dateInput } from "./components/date-input.js";
 import { docTypeInput } from "./components/doc-type.js";
 import { analyzeImage, analyzeText, hasKey, isRetryable } from "../services/gemini.js";
@@ -78,6 +79,7 @@ export function renderAdd(root) {
   const fTitle = h("input", { class: "field", id: "f-title", placeholder: "VD: CO/CQ kim điện cực lô 2410 (bỏ trống cũng được)", oninput: userEdit("title") });
   const fType = docTypeInput({ id: "f-type", onchange: userEdit("docType") });
   const fDate = dateInput({ id: "f-date", onchange: userEdit("docDate") });
+  const fArea = h("select", { class: "field", id: "f-area", onchange: userEdit("area") }, ...AREAS.map(([v, t]) => h("option", { value: v }, t)));
   const fNote = h("textarea", { class: "field", id: "f-note", rows: 3, placeholder: "Ghi chú tự do…" });
   const saveBtn = h("button", { type: "submit", class: "btn btn-primary" }, icon("save", 18), "Lưu");
   const aiBox = h("div", { class: "ai-box" });
@@ -115,6 +117,7 @@ export function renderAdd(root) {
   function applyResult(a) {
     if (!touched.has("title") && a.title && !fTitle.value.trim()) { fTitle.value = a.title; markAi("title"); }
     if (!touched.has("docType") && a.docType && !aiSet.has("docType")) { fType.setValue(a.docType); if (a.docType !== "Khác") markAi("docType"); }
+    if (!touched.has("area") && a.area && !aiSet.has("area")) { fArea.value = a.area; markAi("area"); }
     if (!touched.has("docDate") && a.docDate && fDate.isEmpty()) { fDate.setIso(a.docDate); markAi("docDate"); }
     for (const [key, comp] of [["itemCodes", items], ["lotNumbers", lots], ["subjects", subjects], ["situations", situations]]) {
       if (touched.has(key) || !a[key]?.length) continue;
@@ -181,7 +184,7 @@ export function renderAdd(root) {
     if (inflight() > 0) { status.textContent = "Đang đợi máy đọc chữ xong (tối đa 30 giây)…"; await Promise.allSettled([...pics.map((p) => p.job), textJob]); }
     const docType = fType.commit();
     const common = {
-      docType, docDate, note: fNote.value.trim(),
+      docType, docDate, area: fArea.value, note: fNote.value.trim(),
       itemCodes: items.getValues(), lotNumbers: lots.getValues(),
       subjects: subjects.getValues(), situations: situations.getValues(),
     };
@@ -229,6 +232,7 @@ export function renderAdd(root) {
     h("div", { class: "form-grid two" },
       h("div", { class: "span2" }, lbl("title", "f-title", "Tiêu đề"), fTitle),
       h("div", null, lbl("docType", "f-type", "Loại giấy tờ"), fType.el),
+      h("div", null, lbl("area", "f-area", "Lĩnh vực"), fArea),
       h("div", null, lbl("docDate", "f-date", "Ngày trên giấy tờ"), fDate.el),
       h("div", null, items), h("div", null, lots),
       h("div", null, subjects), h("div", null, situations),

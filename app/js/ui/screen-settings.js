@@ -83,6 +83,43 @@ function geminiSection() {
   );
 }
 
+// Phiên bản + nút "Tải lại bản mới" khi service worker đã tải xong bản mới đang chờ.
+function versionSection() {
+  const msg = h("p", { class: "soon", "aria-live": "polite" });
+  const reloadBtn = h("button", { type: "button", class: "btn btn-primary", hidden: true, onclick: () => {
+    reg?.waiting?.postMessage({ type: "SKIP_WAITING" });
+    setTimeout(() => location.reload(), 1500); // dự phòng nếu không có controllerchange
+  } }, "Tải lại bản mới");
+  const checkBtn = h("button", { type: "button", class: "btn", onclick: check }, "Kiểm tra bản mới");
+  let reg = null;
+  const show = () => {
+    const waiting = !!reg?.waiting;
+    reloadBtn.hidden = !waiting;
+    if (waiting) msg.textContent = "Đã tải xong bản mới. Bấm “Tải lại bản mới” để dùng (hãy lưu việc đang nhập dở trước).";
+  };
+  async function check() {
+    if (!("serviceWorker" in navigator)) { msg.textContent = "Trình duyệt này không hỗ trợ cập nhật tự động."; return; }
+    msg.textContent = "Đang kiểm tra…";
+    try {
+      reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) { msg.textContent = "Chưa bật chế độ offline nên chưa có gì để cập nhật."; return; }
+      await reg.update();
+      if (reg.installing) await new Promise((res) => { reg.installing.addEventListener("statechange", function f() { if (this.state !== "installing") { this.removeEventListener("statechange", f); res(); } }); });
+      show();
+      if (!reg.waiting) msg.textContent = `Bạn đang dùng bản mới nhất (v${APP_VERSION}).`;
+    } catch { msg.textContent = "Không kiểm tra được (có thể đang mất mạng)."; }
+  }
+  if ("serviceWorker" in navigator) {
+    const had = !!navigator.serviceWorker.controller; // lần đầu cài (chưa có bản cũ) thì không cần tải lại
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (had) location.reload(); });
+    navigator.serviceWorker.getRegistration().then((r) => { reg = r; show(); r?.addEventListener("updatefound", () => r.installing?.addEventListener("statechange", show)); }).catch(() => {});
+  }
+  return section("info", "Phiên bản", "Thông tin app.", null,
+    h("p", null, `Cá Vàng v${APP_VERSION}`),
+    h("p", { class: "soon" }, `Cấu trúc dữ liệu: ${SCHEMA_VERSION} · Dữ liệu lưu trên máy này (chưa đồng bộ)`),
+    msg, h("div", { class: "actions" }, checkBtn, reloadBtn));
+}
+
 export function renderSettings(root) {
   startOcrQueue();
   const counts = h("p", { class: "soon" }, "Đang đếm…");
@@ -105,9 +142,7 @@ export function renderSettings(root) {
         section("trash", "Thùng rác", "Khôi phục bằng chứng đã xoá (giữ 30 ngày).", null,
           counts,
           h("a", { class: "btn", href: "#/thung-rac" }, icon("trash", 18), "Mở thùng rác")),
-        section("info", "Phiên bản", "Thông tin app.", null,
-          h("p", null, `Cá Vàng v${APP_VERSION}`),
-          h("p", { class: "soon" }, `Cấu trúc dữ liệu: ${SCHEMA_VERSION} · Dữ liệu lưu trên máy này (chưa đồng bộ)`)),
+        versionSection(),
       ),
     ),
   );

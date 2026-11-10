@@ -7,12 +7,18 @@ import { dbGet, dbPut, dbDelete, dbAll } from "./db.js";
 
 const thumbUrls = new Map();
 
+// Chuyển bản ghi cũ lên cấu trúc mới khi đọc (schema 1 → 2: thêm area, mặc định "work"). Không ghi lại cho tới khi bản ghi được lưu.
+export function migrateRecord(r) {
+  if (r && !r.area) r.area = "work";
+  return r;
+}
+
 function blankRecord() {
   const now = new Date().toISOString();
   return {
     id: newId(), schema: SCHEMA_VERSION, kind: "text",
     createdAt: now, updatedAt: now, deleted: false,
-    title: "", docType: "Khác", itemCodes: [], lotNumbers: [], subjects: [], situations: [],
+    title: "", docType: "Khác", area: "work", itemCodes: [], lotNumbers: [], subjects: [], situations: [],
     note: "", tags: [], docDate: "",
     text: "", ocrText: "", ocrStatus: "none",
     file: null,
@@ -22,7 +28,7 @@ function blankRecord() {
 
 // Tạo mới hoặc cập nhật. opts.blob = { full: Blob, thumb: Blob } (do nơi gọi truyền vào).
 export async function saveRecord(partial, opts = {}) {
-  const existing = partial.id ? await dbGet("records", partial.id) : null;
+  const existing = partial.id ? migrateRecord(await dbGet("records", partial.id)) : null;
   const base = existing || blankRecord();
   const now = new Date().toISOString();
   const record = {
@@ -43,10 +49,10 @@ export async function saveRecord(partial, opts = {}) {
   return record;
 }
 
-export const getRecord = (id) => dbGet("records", id);
+export const getRecord = async (id) => migrateRecord(await dbGet("records", id));
 
 export async function listRecords({ includeDeleted = false } = {}) {
-  const all = await dbAll("records");
+  const all = (await dbAll("records")).map(migrateRecord);
   return includeDeleted ? all : all.filter((r) => !r.deleted);
 }
 

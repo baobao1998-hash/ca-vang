@@ -1,34 +1,48 @@
-// Service worker: cache "vỏ app" để mở được khi không có mạng.
-// Đổi CACHE khi sửa file để máy cũ tải bản mới.
-const CACHE = "cavang-shell-v1";
+// Service worker: lưu "vỏ app" để mở được khi không có mạng.
+// - Tên cache gắn với phiên bản app (main.js đăng ký "sw.js?v=<APP_VERSION>") → đổi phiên bản = cache mới, cache cũ bị xoá.
+// - Có mạng: luôn hỏi lại máy chủ ({cache:"no-cache"}) để lấy bản mới nhất; mất mạng mới dùng bản đã lưu.
+// - Bản mới cài xong sẽ CHỜ; người dùng bấm "Tải lại bản mới" ở Cài đặt (tránh mất dữ liệu đang nhập dở).
+// Phiên bản lấy từ "?v=" khi đăng ký; nếu không có thì đọc từ js/core/version.js.
+const queryVersion = new URL(self.location.href).searchParams.get("v");
+const cacheName = queryVersion
+  ? Promise.resolve("cavang-shell-v" + queryVersion)
+  : fetch("js/core/version.js", { cache: "no-store" }).then((r) => r.text())
+      .then((t) => "cavang-shell-v" + (/APP_VERSION = "([^"]+)"/.exec(t) || [])[1]).catch(() => "cavang-shell-vdev");
 const SHELL = [
   "./", "index.html", "manifest.webmanifest",
   "css/tokens.css", "css/glass.css", "css/app.css",
-  "js/main.js", "js/core/version.js",
-  "js/ui/dom.js", "js/ui/mock.js",
-  "js/ui/screen-search.js", "js/ui/screen-add.js", "js/ui/screen-detail.js", "js/ui/screen-settings.js",
-  "js/ui/components/tag-input.js",
+  "js/main.js",
+  "js/core/config.js", "js/core/events.js", "js/core/ids.js", "js/core/text.js", "js/core/version.js",
+  "js/data/db.js", "js/data/records.js", "js/data/search.js", "js/data/settings.js",
+  "js/services/gemini.js", "js/services/image.js",
+  "js/ui/common.js", "js/ui/dom.js", "js/ui/ocr-queue.js",
+  "js/ui/screen-add.js", "js/ui/screen-detail.js", "js/ui/screen-search.js", "js/ui/screen-settings.js", "js/ui/screen-trash.js",
+  "js/ui/components/date-input.js", "js/ui/components/doc-type.js", "js/ui/components/lightbox.js", "js/ui/components/tag-input.js",
+  "vendor/minisearch.js",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png",
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(cacheName.then((n) => caches.open(n)).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: "reload" })))));
+});
+
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()),
+    cacheName.then((n) => n === "cavang-shell-vdev" ? null : caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== n).map((k) => caches.delete(k))))).then(() => self.clients.claim()),
   );
 });
 
-// Ưu tiên mạng (luôn mới), mất mạng thì dùng bản đã lưu.
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(req)
+    fetch(req, { cache: "no-cache" })
       .then((res) => {
-        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        if (res.ok) { const copy = res.clone(); cacheName.then((n) => caches.open(n)).then((c) => c.put(req, copy)); }
         return res;
       })
       .catch(() => caches.match(req).then((hit) => hit || caches.match("index.html"))),

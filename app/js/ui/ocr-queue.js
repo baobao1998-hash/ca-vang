@@ -13,7 +13,7 @@ const isAutoTitle = (r) => !r.title || /^Ảnh ngày /.test(r.title) || (r.file?
 export function fillEmpty(r, a) {
   const patch = {};
   if (isAutoTitle(r) && a.title) patch.title = a.title;
-  if ((!r.docType || r.docType === "Khác") && a.docType && a.docType !== "Khác") { patch.docType = a.docType; rememberDocType(a.docType); }
+  if ((!r.docType || r.docType === "Khác") && a.docType && a.docType !== "Khác") { patch.docType = a.docType; rememberDocType(a.docType); if (a.area) patch.area = a.area; }
   if (!r.docDate && a.docDate) patch.docDate = a.docDate;
   for (const f of ["itemCodes", "lotNumbers", "subjects", "situations"]) {
     if (!(r[f] || []).length && a[f]?.length) patch[f] = a[f];
