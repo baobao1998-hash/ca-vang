@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cavang",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "5500", "-d", "app"],
+      "port": 5500
+    }
+  ]
+}

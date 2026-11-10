@@ -1,0 +1,16 @@
+# Bí mật — không bao giờ commit
+.env
+*.key
+secrets*
+config.local.*
+
+# Sao lưu cục bộ (đã nén zip)
+_sao-luu/
+
+# Rác hệ thống / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+node_modules/
+.vscode/
+*.log
