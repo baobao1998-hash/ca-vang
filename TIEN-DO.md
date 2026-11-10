@@ -51,7 +51,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 | 6.1 | Rà soát bảo mật (CSP, XSS, key) + hiệu năng tìm kiếm 10.000 bản ghi | toàn bộ (chỉ sửa lỗi) | ✅ XONG — v0.5.1 (Phần C: xem nhật ký) |
 | 6.2 | Xuất "hồ sơ trình bày": chọn nhiều bằng chứng → in/xuất PDF kèm ghi chú | `app/js/ui/*`, `app/css/*` | ⬜ CHƯA LÀM |
 | 6.3 | Tải sẵn ảnh đầy đủ khi có Wi-Fi (công tắc) + Background Sync một lần cho outbox khi app đã đóng (không làm Periodic Sync) + đo tốc độ mở app | `app/js/services/prefetch.js` (mới), `app/js/services/sync.js`, `auth.js`, `drive.js`, `app/js/data/records.js`, `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/sw.js`, `app/css/*`, `docs/KIEN-TRUC.md` | ✅ XONG — v0.5.2 |
-| 6.4 | Sửa cập nhật app: nút "Tải lại bản mới" luôn hiện (thiếu CSS `[hidden]`), so phiên bản với máy chủ, cập nhật cưỡng bức + báo có bản mới khi mở app | `app/css/glass.css`, `app/js/ui/updater.js` (mới), `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/sw.js` (SHELL) | 🔒 ĐANG LÀM — 2026-11-10 |
+| 6.4 | Sửa cập nhật app: nút "Tải lại bản mới" luôn hiện (thiếu CSS `[hidden]`), so phiên bản với máy chủ, cập nhật cưỡng bức + báo có bản mới khi mở app | `app/css/glass.css`, `app/js/ui/updater.js` (mới), `app/js/ui/screen-settings.js`, `app/js/main.js`, `app/sw.js`, `scripts/stamp_version.py` (mới), `.github/workflows/pages.yml` | ✅ XONG — v0.5.3 |
 
 ---
 ## Ý tưởng để sau (chưa duyệt)

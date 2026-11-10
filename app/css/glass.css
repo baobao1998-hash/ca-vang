@@ -28,6 +28,9 @@
   .glass { background: var(--glass-strong); }
 }
 
+/* Phần tử có thuộc tính hidden phải ẩn thật, kể cả khi lớp CSS khác đặt display (vd .btn). */
+[hidden] { display: none !important; }
+
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 0 18px;

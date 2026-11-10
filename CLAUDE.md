@@ -52,6 +52,7 @@ Số phiên bản nằm duy nhất ở `app/js/core/version.js` và phải khớ
 - Giao diện phải dùng tốt trên điện thoại (màn 360px) và máy tính.
 - **Thêm/xoá/đổi tên file trong `app/`** → bắt buộc cập nhật danh sách `SHELL` trong `app/sw.js` (được phép sửa riêng dòng đó dù ngoài phạm vi). File thiếu trong danh sách = bản mới không cài được trên máy người dùng.
 - **Kiểm thử giả lập** (mock fetch, dữ liệu giả tiêm vào trình duyệt) phải gỡ bỏ và tải lại tab trước khi bàn giao, và nói rõ cho chủ dự án biết phần nào đã thử thật, phần nào mới giả lập.
+- **Không đổi cách viết import** (`import ... from "./x.js"`, đường dẫn tương đối, có đuôi `.js`): khi deploy, `scripts/stamp_version.py` dựa vào đó để gắn `?v=<phiên bản>`. Không dùng `import()` động với đường dẫn ghép chuỗi. Thử cục bộ không gắn số → tải lại bằng Ctrl+Shift+R.
 - Chạy thử cục bộ: `python -m http.server 5500 -d app` hoặc dùng preview của Claude (cấu hình trong `.claude/launch.json`).
 
 ## 5. Khi chủ dự án nói "quay về bản cũ"

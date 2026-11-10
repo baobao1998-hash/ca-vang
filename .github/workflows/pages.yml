@@ -24,6 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # Gắn ?v=<phiên bản> vào đường dẫn file code để máy người dùng luôn nhận bản mới (xem scripts/stamp_version.py).
+      - name: Gắn số phiên bản vào file code
+        run: python3 scripts/stamp_version.py app
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app

@@ -4,13 +4,25 @@
     {
       "name": "cavang",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5500", "-d", "app"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5500",
+        "-d",
+        "app"
+      ],
       "port": 5500
     },
     {
       "name": "cavang-review",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5600", "-d", "app"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5600",
+        "-d",
+        "app"
+      ],
       "port": 5600
     }
   ]

@@ -17,7 +17,7 @@ const SHELL = [
   "js/core/config.js", "js/core/events.js", "js/core/ids.js", "js/core/text.js", "js/core/version.js",
   "js/data/db.js", "js/data/records.js", "js/data/search.js", "js/data/settings.js",
   "js/services/auth.js", "js/services/backup.js", "js/services/drive.js", "js/services/gemini.js", "js/services/image.js", "js/services/prefetch.js", "js/services/sync.js",
-  "js/ui/common.js", "js/ui/dom.js", "js/ui/ocr-queue.js",
+  "js/ui/common.js", "js/ui/dom.js", "js/ui/ocr-queue.js", "js/ui/updater.js",
   "js/ui/screen-add.js", "js/ui/screen-detail.js", "js/ui/screen-search.js", "js/ui/screen-settings.js", "js/ui/screen-trash.js",
   "js/ui/components/date-input.js", "js/ui/components/doc-type.js", "js/ui/components/lightbox.js", "js/ui/components/tag-input.js",
   "vendor/minisearch.js",
@@ -103,6 +103,7 @@ self.addEventListener("fetch", (e) => {
         if (res.ok) { const copy = res.clone(); cacheName.then((n) => caches.open(n)).then((c) => c.put(req, copy)); }
         return res;
       })
-      .catch(() => caches.match(req).then((hit) => hit || caches.match("index.html"))),
+      // Mất mạng: tìm trong bộ nhớ, bỏ qua "?v=..." (file trên mạng được gắn số phiên bản khi deploy).
+      .catch(() => caches.match(req, { ignoreSearch: true }).then((hit) => hit || caches.match("index.html"))),
   );
 });

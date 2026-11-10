@@ -10,6 +10,7 @@ import { on } from "../core/events.js";
 import { signIn, signOut, wasSignedIn } from "../services/auth.js";
 import { syncNow, getStatus, getSyncInfo, resetConnection } from "../services/sync.js";
 import { exportJson, importJson, todayStr } from "../services/backup.js";
+import { serverVersion, isNewer, applyUpdate } from "./updater.js";
 import { isPrefetchEnabled, setPrefetchEnabled, getPrefetchStats, clearPrefetched } from "../services/prefetch.js";
 
 function section(ico, title, desc, status, ...body) {
@@ -224,35 +225,31 @@ function backupSection() {
 
 // Phiên bản + nút "Tải lại bản mới" khi service worker đã tải xong bản mới đang chờ.
 function versionSection() {
+  // Chỉ hiện nút "Cập nhật ngay" khi CHẮC CHẮN có bản mới (máy chủ có số phiên bản lớn hơn, hoặc service worker mới đang chờ).
   const msg = h("p", { class: "soon", "aria-live": "polite" });
   const reloadBtn = h("button", { type: "button", class: "btn btn-primary", hidden: true, onclick: () => {
-    reg?.waiting?.postMessage({ type: "SKIP_WAITING" });
-    setTimeout(() => location.reload(), 1500); // dự phòng nếu không có controllerchange
-  } }, "Tải lại bản mới");
-  const checkBtn = h("button", { type: "button", class: "btn", onclick: check }, "Kiểm tra bản mới");
-  let reg = null;
-  const show = () => {
-    const waiting = !!reg?.waiting;
-    reloadBtn.hidden = !waiting;
-    if (waiting) msg.textContent = "Đã tải xong bản mới. Bấm “Tải lại bản mới” để dùng (hãy lưu việc đang nhập dở trước).";
+    reloadBtn.disabled = true;
+    msg.textContent = "Đang cập nhật… app sẽ tự tải lại.";
+    applyUpdate();
+  } }, "Cập nhật ngay");
+  const offer = (v) => {
+    reloadBtn.hidden = false;
+    msg.textContent = v
+      ? `Có bản mới v${v} (bạn đang dùng v${APP_VERSION}). Bấm “Cập nhật ngay” — hãy lưu việc đang nhập dở trước.`
+      : "Đã tải xong bản mới. Bấm “Cập nhật ngay” để dùng — hãy lưu việc đang nhập dở trước.";
   };
   async function check() {
-    if (!("serviceWorker" in navigator)) { msg.textContent = "Trình duyệt này không hỗ trợ cập nhật tự động."; return; }
     msg.textContent = "Đang kiểm tra…";
-    try {
-      reg = await navigator.serviceWorker.getRegistration();
-      if (!reg) { msg.textContent = "Chưa bật chế độ offline nên chưa có gì để cập nhật."; return; }
-      await reg.update();
-      if (reg.installing) await new Promise((res) => { reg.installing.addEventListener("statechange", function f() { if (this.state !== "installing") { this.removeEventListener("statechange", f); res(); } }); });
-      show();
-      if (!reg.waiting) msg.textContent = `Bạn đang dùng bản mới nhất (v${APP_VERSION}).`;
-    } catch { msg.textContent = "Không kiểm tra được (có thể đang mất mạng)."; }
+    reloadBtn.hidden = true;
+    const v = await serverVersion();
+    if (v === null) { msg.textContent = "Không kiểm tra được (có thể đang mất mạng)."; return; }
+    if (isNewer(v, APP_VERSION)) { offer(v); return; }
+    const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration().catch(() => null) : null;
+    if (reg?.waiting) { offer(null); return; }
+    msg.textContent = `Bạn đang dùng bản mới nhất (v${APP_VERSION}).`;
   }
-  if ("serviceWorker" in navigator) {
-    const had = !!navigator.serviceWorker.controller; // lần đầu cài (chưa có bản cũ) thì không cần tải lại
-    navigator.serviceWorker.addEventListener("controllerchange", () => { if (had) location.reload(); });
-    navigator.serviceWorker.getRegistration().then((r) => { reg = r; show(); r?.addEventListener("updatefound", () => r.installing?.addEventListener("statechange", show)); }).catch(() => {});
-  }
+  const checkBtn = h("button", { type: "button", class: "btn", onclick: check }, "Kiểm tra bản mới");
+  check(); // tự kiểm tra khi mở Cài đặt
   return section("info", "Phiên bản", "Thông tin app.", null,
     h("p", null, `Cá Vàng v${APP_VERSION}`),
     getSetting("lastOpenMs") && h("p", { class: "soon" }, `Lần mở app gần nhất: thấy danh sách sau ${(getSetting("lastOpenMs") / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} giây`),

@@ -10,6 +10,7 @@ import { listRecords, purgeOld } from "./data/records.js";
 import { initSearch, indexRecord, unindexRecord } from "./data/search.js";
 import { on } from "./core/events.js";
 import { APP_VERSION } from "./core/version.js";
+import { findUpdate } from "./ui/updater.js";
 import { readClipboardImage } from "./services/image.js";
 import { startAutoSync, getStatus, syncNow } from "./services/sync.js";
 import { startPrefetch } from "./services/prefetch.js";
@@ -127,6 +128,16 @@ async function start() {
   // Dọn thùng rác quá 30 ngày: để sau khi danh sách đã hiện (bản ghi đó vốn không nằm trong danh sách/chỉ mục).
   const later = window.requestIdleCallback || ((f) => setTimeout(f, 500));
   later(() => { purgeOld().catch((e) => console.warn("Không dọn được thùng rác:", e)); }, { timeout: 5000 });
+  // Báo có bản mới: kiểm tra lúc mở app và khi quay lại app (tối đa 30 phút/lần). Chỉ báo, không tự tải lại (tránh mất việc đang nhập).
+  let lastCheck = 0;
+  const checkUpdate = async () => {
+    if (!navigator.onLine || Date.now() - lastCheck < 30 * 60000) return;
+    lastCheck = Date.now();
+    const v = await findUpdate();
+    if (v) toast(`Có bản mới v${v} — vào Cài đặt → Phiên bản → “Cập nhật ngay”.`, "ok", 8000);
+  };
+  setTimeout(checkUpdate, 4000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(); });
 }
 
 // Chấm trạng thái đồng bộ ở góc trên bên phải: xám = chưa kết nối, xanh = đã đồng bộ, xanh dương nhấp nháy = đang đồng bộ, cam = chờ mạng / cần đăng nhập lại, đỏ = lỗi.

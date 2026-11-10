@@ -2,6 +2,14 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v0.5.3 · 2026-11-10 · Việc 6.4 — sửa lỗi app kẹt ở bản cũ
+- **Nguyên nhân (đã dựng lại được):** khi tải lại trang, Chrome lấy file code (JS/CSS) từ bộ nhớ tạm của chính nó mà KHÔNG hỏi service worker; tên file không đổi giữa các phiên bản nên máy cứ chạy bản cũ (chủ thấy mãi v0.5.1 dù trên mạng đã là v0.5.2). Thêm lỗi phụ: nút "Tải lại bản mới" LUÔN hiện (thiếu CSS cho thuộc tính `hidden`), bấm vào chỉ tải lại trang nên vẫn bản cũ.
+- **Sửa:** khi đưa lên mạng, GitHub Actions chạy `scripts/stamp_version.py` gắn `?v=<phiên bản>` vào mọi đường dẫn file code (import JS, CSS, main.js, sw-outbox.js) → mỗi bản có địa chỉ file mới, trình duyệt buộc tải mới. Code gốc trong kho không đổi; chạy thử trên máy (localhost) không gắn số → khi thử cục bộ dùng Ctrl+Shift+R.
+- Service worker: mất mạng thì tìm file trong bộ nhớ bỏ qua `?v=` (offline vẫn chạy).
+- Cài đặt → Phiên bản: tự so số phiên bản với máy chủ; nút đổi thành "Cập nhật ngay", CHỈ hiện khi thật sự có bản mới; cập nhật = nạp service worker mới + xoá vỏ app cũ + tải lại (không đụng dữ liệu, đăng nhập, ảnh chia sẻ). Mở app / quay lại app (tối đa 30 phút/lần) có bản mới → thông báo.
+- `[hidden] { display:none !important }` cho toàn app.
+- **ĐÃ thử thật** (Chrome trong khung xem thử, có service worker, bản dựng giống hệt GitHub): đang chạy 0.5.3 → thay máy chủ bằng 0.5.4 → tải lại thường → hiện ngay 0.5.4; tắt máy chủ → app vẫn mở offline. Bản cũ (không gắn số) dựng lại đúng lỗi: tải lại vẫn hiện bản cũ. **CHƯA thử:** trên trang GitHub thật và S25+ (máy đang kẹt 0.5.1 cần bấm Ctrl+Shift+R một lần, hoặc đóng hẳn app mở lại, để nhận bản 0.5.3 có cơ chế mới).
+
 ## v0.5.2 · 2026-11-10 · Việc 6.3 — tải sẵn ảnh khi có Wi-Fi + đẩy nốt khi đã tắt app
 - **Tải sẵn ảnh đầy đủ** (Cài đặt → "Ảnh tải sẵn"): công tắc mặc định BẬT; hiện "Đã tải sẵn X/Y ảnh · Z MB" + nút "Xoá ảnh tải sẵn" (xoá bản đầy đủ trên máy, giữ ảnh nhỏ, Drive không đổi; chỉ xoá ảnh đã chắc chắn có trên Drive; xong thì tắt công tắc). Chỉ chạy khi: đăng nhập, có Wi-Fi (máy tính: không báo loại mạng thì coi là được), không tiết kiệm dữ liệu, pin ≥ 20% hoặc đang sạc, app đang mở, không đang đồng bộ, còn trống ≥ 10%. Từng ảnh một, mới nhất trước, nghỉ giữa các ảnh. Đóng app là dừng → không hao pin.
 - **Đẩy nốt lên Drive khi đã tắt app** (Background Sync MỘT LẦN, Chrome/Android + Chrome/Edge máy tính): `sw-outbox.js` mới. Token Google nay được chép thêm sang IndexedDB (`meta.swToken`), đăng xuất/hết hạn xoá cả hai nơi. Token hết hạn thì bỏ qua, chờ lần mở app sau. Khoá Web Locks tránh app và nền đẩy trùng. KHÔNG làm Periodic Sync (lý do trong KIEN-TRUC mục 6b).
