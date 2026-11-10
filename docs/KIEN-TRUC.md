@@ -109,6 +109,7 @@ scripts/                   ← script PowerShell tiện ích (sao lưu dự án)
   // File (kind = image)
   file: {
     driveId: "1AbC...",     // null khi chưa đồng bộ
+    thumbDriveId: "1Def...",// thumbnail trên Drive (tải sẵn khi đồng bộ); ảnh đầy đủ chỉ tải khi mở xem
     mime: "image/jpeg",
     width: 2000, height: 1500, bytes: 412345,
     originalName: "IMG_1234.jpg"
