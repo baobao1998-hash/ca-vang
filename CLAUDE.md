@@ -37,6 +37,7 @@ Chủ dự án là người **không rành kỹ thuật** → luôn giải thíc
 - ❌ Không thêm framework/bước build (React, Vite, npm build...). App là HTML + CSS + JavaScript thuần (ES modules), mở là chạy.
 - ❌ Không tải thư viện từ CDN lúc chạy. Thư viện phải tải về `app/vendor/` (ghi rõ phiên bản + nguồn trong `app/vendor/README.md`).
 - ❌ Không dùng `innerHTML` với dữ liệu người dùng/OCR (chống chèn mã độc) — dùng `textContent` hoặc hàm `h()` trong `app/js/ui/dom.js`.
+- ❌ **"Dùng chìa, không nhìn chìa":** không bao giờ đọc rồi in giá trị khoá ra màn hình/chat — gồm key Gemini và token Google trong trình duyệt (localStorage, IndexedDB kho `meta`), file `client_secret*`, `.env`. Khi thử app trong trình duyệt bằng javascript_tool: không đọc `localStorage` toàn bộ, không in token/key; cần kiểm có hay không thì chỉ trả về `true/false` hoặc độ dài. Không `cat`/`grep` nội dung file khoá; chỉ được liệt kê tên file.
 
 ## 3. Đánh số phiên bản
 `vMAJOR.MINOR.PATCH` — ví dụ `v0.3.1`.

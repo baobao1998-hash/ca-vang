@@ -300,12 +300,12 @@ export async function resetConnection() {
 }
 
 // ---------- Ảnh đầy đủ tải khi cần xem ----------
-async function loadFull(id) {
+async function loadFull(id, opts) {
   const rec = await dbGet("records", id);
   const driveId = rec?.file?.driveId;
   if (!driveId || !isSignedIn()) return null;
   try {
-    const full = await downloadFile(driveId);
+    const full = await downloadFile(driveId, opts);
     const prev = await dbGet("blobs", id);
     await dbPut("blobs", { id, full, thumb: prev?.thumb });
     return full;

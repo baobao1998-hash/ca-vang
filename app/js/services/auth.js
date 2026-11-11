@@ -2,6 +2,8 @@
 // Token (sống ~1 giờ, quyền chỉ drive.file) được nhớ trong localStorage của thiết bị tới khi hết hạn, để tải lại/mở lại app
 // không phải đăng nhập lại. Hết hạn thì xin lại lúc người dùng chạm vào app (xin "yên lặng", không cần gõ mật khẩu).
 // Không bao giờ tự bật cửa sổ đăng nhập khi người dùng chưa chạm (điện thoại sẽ chặn/đóng cửa sổ đó).
+// Máy có nhiều tài khoản Google: nhớ email đã chọn (chỉ trên máy này) và gửi kèm "login_hint" khi xin lại token
+// → Google bỏ qua màn "Chọn tài khoản", cửa sổ tự đóng ngay, người dùng không phải chọn lại mỗi giờ.
 import { GOOGLE_CLIENT_ID, GOOGLE_SCOPE } from "../core/config.js";
 import { getSetting, setSetting } from "../data/settings.js";
 import { emit } from "../core/events.js";
@@ -13,6 +15,8 @@ export class AuthError extends Error {
 
 const TOKEN_KEY = "cavang.gtoken";
 const SW_TOKEN_KEY = "swToken";
+const EMAIL_SETTING = "googleEmail"; // email tài khoản đã đăng nhập — chỉ lưu trên máy, dùng làm login_hint
+const RENEW_BEFORE_MS = 15 * 60000;  // còn dưới 15 phút thì lần chạm kế tiếp xin token mới (trước khi hết hạn)
 let token = null;
 let expiresAt = 0;
 
@@ -38,6 +42,7 @@ function mirrorTokenForWorker() {
 }
 restoreToken();
 if (token) mirrorTokenForWorker(); // bản 0.5.1 trở về trước chưa chép sang IndexedDB
+if (token && !getSetting(EMAIL_SETTING, "")) rememberEmail(token); // máy đã đăng nhập từ bản cũ: lấy email luôn
 let gisPromise = null;
 let pending = null;
 let lastQuietFail = 0;
@@ -58,16 +63,28 @@ function loadGis() {
   return gisPromise;
 }
 
+// Hỏi Drive email của tài khoản vừa đăng nhập (scope drive.file vẫn đọc được), nhớ lại để lần sau khỏi chọn tài khoản.
+async function rememberEmail(tk) {
+  try {
+    const res = await fetch("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)", { headers: { Authorization: "Bearer " + tk } });
+    if (!res.ok) return;
+    const email = (await res.json())?.user?.emailAddress;
+    if (typeof email === "string" && /^[^\s@]{1,64}@[^\s@]{1,255}$/.test(email)) setSetting(EMAIL_SETTING, email);
+  } catch { /* không lấy được thì lần sau Google vẫn hỏi chọn tài khoản như cũ */ }
+}
+
 function requestToken(prompt) {
   if (pending) return pending;
   pending = (async () => {
     await loadGis();
+    const hint = prompt === "select_account" ? "" : getSetting(EMAIL_SETTING, "") || "";
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new AuthError("Hết thời gian chờ đăng nhập Google. Hãy thử lại.", "timeout")), 120000);
       const fail = (msg, code) => { clearTimeout(timer); reject(new AuthError(msg, code)); };
       const client = window.google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: GOOGLE_SCOPE,
+        ...(hint ? { login_hint: hint } : {}),
         callback: (resp) => {
           if (resp.error) {
             if (resp.error === "access_denied") return fail("Bạn chưa cho phép Cá Vàng dùng Google Drive.", "denied");
@@ -81,6 +98,7 @@ function requestToken(prompt) {
           expiresAt = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
           persistToken();
           setSetting("googleHint", true);
+          if (!hint) rememberEmail(token);
           resolve(token);
         },
         error_callback: (err) => {
@@ -90,7 +108,7 @@ function requestToken(prompt) {
           else fail("Không đăng nhập được Google. Hãy thử lại.", "interaction");
         },
       });
-      client.requestAccessToken({ prompt });
+      client.requestAccessToken(hint ? { prompt, login_hint: hint } : { prompt });
     });
   })().finally(() => { pending = null; });
   return pending;
@@ -113,8 +131,8 @@ export async function getToken({ interactive = false } = {}) {
   return requestToken("");
 }
 
-// Token sắp hết hạn (dưới 5 phút) hoặc đã mất.
-export function needsRenewal() { return !token || Date.now() > expiresAt - 5 * 60000; }
+// Token sắp hết hạn (dưới 15 phút) hoặc đã mất.
+export function needsRenewal() { return !token || Date.now() > expiresAt - RENEW_BEFORE_MS; }
 
 // Gọi trong lúc người dùng chạm: xin token mới yên lặng. Lỗi thì im lặng (có hạ nhiệt 30 giây để không bật cửa sổ liên tục).
 export async function renewQuietly() {
@@ -130,6 +148,7 @@ export function signOut() {
   const t = token;
   token = null; expiresAt = 0; persistToken();
   setSetting("googleHint", null);
+  setSetting(EMAIL_SETTING, null); // lần sau (có thể đổi tài khoản) cho chọn lại
   // Thu hồi token ở phía Google (tải sẵn công cụ Google thì dùng nó; không thì gọi thẳng).
   try {
     if (t && window.google?.accounts?.oauth2) window.google.accounts.oauth2.revoke(t, () => {});

@@ -57,6 +57,7 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 ## Sau v1.0.0 — việc mới
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
+| 7.1 | Bớt hỏi đăng nhập (login_hint), tải sẵn ảnh không giật, luật bảo mật | auth.js, prefetch.js, drive.js, sync.js, records.js, screen-detail.js, CLAUDE.md, .gitignore | ✅ XONG — v1.0.1 |
 | 7.x | (thêm việc mới ở đây, mỗi việc một phiên; sửa lỗi nhỏ tăng PATCH 1.0.x, tính năng mới tăng MINOR 1.x.0) | | |
 
 ---

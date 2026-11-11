@@ -146,8 +146,9 @@ async function upload(blob, name, parentId, existingId) {
 export async function uploadFile(blob, name, parentId, existingId) { return (await upload(blob, name, parentId, existingId)).id; }
 export const uploadFileFull = upload;
 
-export async function downloadFile(driveId) {
-  return (await request(`${API}/files/${checkId(driveId)}?alt=media`)).blob();
+// priority "low": dùng cho tải sẵn chạy ngầm, nhường mạng cho việc người dùng đang làm.
+export async function downloadFile(driveId, { priority } = {}) {
+  return (await request(`${API}/files/${checkId(driveId)}?alt=media`, priority ? { priority } : {})).blob();
 }
 
 export function putJsonFull(name, obj, parentId, existingId) {

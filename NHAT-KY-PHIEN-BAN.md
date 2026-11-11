@@ -2,6 +2,12 @@
 
 Mới nhất ở trên. Mỗi dòng: phiên bản · ngày · việc · tóm tắt (tiếng Việt dễ hiểu).
 
+## v1.0.1 · 2026-11-11 · Việc 7.1 — bớt hỏi đăng nhập Google, tải sẵn ảnh không làm giật app, siết bảo mật
+- **Đăng nhập Google:** app nhớ email tài khoản đã chọn (chỉ lưu trên máy) và báo trước cho Google → hết hạn mỗi giờ thì cửa sổ Google tự mở rồi tự đóng, **không còn bắt chọn tài khoản**. App cũng xin token mới sớm hơn (còn 15 phút) khi bạn đang dùng, nên ít khi gặp lúc đã hết hạn.
+- **Tải sẵn ảnh:** tạm dừng khi bạn đang chạm/cuộn/gõ, rảnh tay 4 giây mới tải tiếp; tải ở mức ưu tiên thấp; tải đủ rồi thì không quét lại mỗi phút. Ảnh lớn được giải nén ngoài luồng chính khi mở chi tiết.
+- **Bảo mật:** thêm luật "Agent dùng chìa, không nhìn chìa" vào CLAUDE.md (không đọc/in key Gemini trong trình duyệt khi thử app); .gitignore chặn thêm các loại file khoá.
+- Lưu ý: lần đầu sau khi cập nhật, nếu máy chưa nhớ email, Google có thể hỏi chọn tài khoản thêm 1 lần nữa.
+
 ## v1.0.0 · 2026-11-10 · Chốt bản hoàn chỉnh đầu tiên 🎉
 Cá Vàng làm được:
 - **Lưu mọi bằng chứng** (công việc + cá nhân): chụp ảnh, chọn ảnh, kéo thả/Ctrl+V, dán văn bản, hoặc "Chia sẻ → Cá Vàng" từ Thư viện Android.

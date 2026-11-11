@@ -148,8 +148,8 @@ export async function getThumbUrl(id) {
 let fullLoader = null;
 export function setFullLoader(fn) { fullLoader = fn; }
 
-export async function getFullBlob(id) {
+export async function getFullBlob(id, opts) {
   const b = await dbGet("blobs", id);
   if (b && b.full) return b.full;
-  return fullLoader ? fullLoader(id) : null;
+  return fullLoader ? fullLoader(id, opts) : null;
 }

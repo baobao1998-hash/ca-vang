@@ -3,6 +3,11 @@
 *.key
 secrets*
 config.local.*
+.env.*
+.dev.vars
+*.pem
+client_secret*
+*credentials*.json
 
 # Sao lưu cục bộ (đã nén zip)
 _sao-luu/

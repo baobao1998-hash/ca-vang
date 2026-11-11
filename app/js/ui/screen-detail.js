@@ -59,7 +59,7 @@ export function renderDetail(root, id) {
   function media() {
     if (r.kind === "image") {
       return imgUrl
-        ? h("div", { class: "detail-img glass" }, h("button", { type: "button", "aria-label": "Phóng to ảnh", onclick: () => openLightbox(imgUrl, r.title) }, h("img", { src: imgUrl, alt: "Ảnh: " + r.title })))
+        ? h("div", { class: "detail-img glass" }, h("button", { type: "button", "aria-label": "Phóng to ảnh", onclick: () => openLightbox(imgUrl, r.title) }, h("img", { src: imgUrl, alt: "Ảnh: " + r.title, decoding: "async" })))
         : h("div", { class: "detail-text glass" }, "Không tìm thấy file ảnh trên máy này.");
     }
     return h("div", { class: "detail-text glass" }, r.text);
