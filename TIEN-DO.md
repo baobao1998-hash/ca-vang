@@ -55,9 +55,11 @@ Prompt giao việc: xem `docs/GIAO-VIEC.md`.
 | 6.5 | Điện thoại: thông báo "Đã lưu" che nút quay lại → chuyển xuống ngay trên thanh menu dưới, gọn hơn | `app/css/app.css` | ✅ XONG — v0.5.4 |
 
 ## Sau v1.0.0 — việc mới
+Sau mỗi đợt ~3 việc (hoặc khi phiên con làm lan man/sai luật): Opus chạy "Rà soát prompt & luật" trong `docs/GIAO-VIEC.md`.
 | Mã | Việc | File được sửa | Trạng thái |
 |---|---|---|---|
 | 7.1 | Bớt hỏi đăng nhập (login_hint), tải sẵn ảnh không giật, luật bảo mật | auth.js, prefetch.js, drive.js, sync.js, records.js, screen-detail.js, CLAUDE.md, .gitignore | ✅ XONG — v1.0.1 |
+| 7.2 | Áp quy định hiệu năng & rà soát prompt (ngân sách 8b, sổ rà soát, khuôn prompt mới) | `CLAUDE.md`, `docs/KIEN-TRUC.md`, `docs/GIAO-VIEC.md`, `docs/RA-SOAT.md`, `TIEN-DO.md` | ✅ XONG — (tài liệu, không đổi app) |
 | 7.x | (thêm việc mới ở đây, mỗi việc một phiên; sửa lỗi nhỏ tăng PATCH 1.0.x, tính năng mới tăng MINOR 1.x.0) | | |
 
 ---

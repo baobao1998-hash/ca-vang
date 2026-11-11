@@ -7,13 +7,15 @@ Chủ dự án là người **không rành kỹ thuật** → luôn giải thíc
 1. `docs/KIEN-TRUC.md` — kiến trúc, mô hình dữ liệu, hợp đồng giữa các module. **Không tự ý đổi.**
 2. `TIEN-DO.md` — bảng việc. Chỉ làm việc được giao, đúng phạm vi file được liệt kê.
 3. `NHAT-KY-PHIEN-BAN.md` — các phiên bản đã có.
+4. `docs/RA-SOAT.md` — các lần làm lan man / sai luật trước đây, đừng lặp lại.
 
 ## 1. Quy trình mỗi phiên (không được bỏ bước)
 1. Chạy `git status`. Nếu có thay đổi chưa lưu (không phải của mình) → **DỪNG, báo chủ dự án**, không xoá, không commit hộ.
 2. Mở `TIEN-DO.md`, tìm việc được giao. Nếu việc đang ghi `🔒 ĐANG LÀM` bởi phiên khác → DỪNG, báo chủ.
 3. Đánh dấu việc: `🔒 ĐANG LÀM — <ngày>` rồi commit ngay: `git commit -am "chore: nhan viec <mã việc>"`.
-4. Chỉ sửa các file nằm trong cột **"File được sửa"** của việc đó. Cần sửa file ngoài phạm vi → hỏi chủ trước.
-5. Làm xong: tự kiểm tra (mở app trong trình duyệt, thử chức năng, xem console không lỗi).
+4. Chỉ sửa các file nằm trong cột **"File được sửa"** của việc đó. Cần sửa file ngoài phạm vi → hỏi chủ trước. Không "tiện tay" làm thêm ngoài yêu cầu — ghi vào "Ý tưởng để sau" trong `TIEN-DO.md`.
+5. Làm xong: tự kiểm tra (mở app trong trình duyệt, thử chức năng + chức năng lân cận, xem console không lỗi; việc ảnh hưởng tốc độ/RAM thì đo trước/sau theo `docs/KIEN-TRUC.md` mục 8b). Tắt server chạy thử khi xong.
+5b. **Tự đối chiếu với prompt:** đọc lại prompt giao việc, đánh dấu từng yêu cầu ✅/❌; `git diff --stat` chỉ có file trong phạm vi (có file ngoài phạm vi → hoàn lại hoặc hỏi chủ). Đưa bảng đối chiếu vào báo cáo.
 6. Cập nhật:
    - `app/js/core/version.js` → tăng số phiên bản (xem mục 3).
    - `NHAT-KY-PHIEN-BAN.md` → thêm dòng mới trên cùng.
@@ -28,7 +30,8 @@ Chủ dự án là người **không rành kỹ thuật** → luôn giải thíc
    - **Việc song song (🔀):** KHÔNG sửa `version.js`, KHÔNG tag; commit ghi `(viec 1.2)`. Khi tất cả việc 🔀 của giai đoạn đã ✅, phiên cuối cùng (hoặc phiên "chốt giai đoạn") mới tăng version + tag + ghi nhật ký tổng.
    - Nếu `git commit` báo `index.lock` → đợi 5 giây rồi thử lại, không xoá file lock khi phiên khác đang chạy.
    - **Đưa lên mạng (từ v0.5.0):** sau khi tag, chạy `git push origin main --tags`. GitHub Actions tự deploy `app/` lên https://baobao1998-hash.github.io/ca-vang/ sau ~2 phút. Kho này CÔNG KHAI → kiểm tra lần cuối không có key/token/email cá nhân trong file trước khi push. Không push nhánh `sao-luu-*`.
-8. Báo chủ dự án bằng tiếng Việt: đã làm gì, thử thế nào, phiên bản mới là gì, còn gì chưa xong.
+**Sửa nhanh do phiên chính (Opus)** khi chủ báo lỗi: không cần commit "nhận việc", nhưng vẫn thêm 1 dòng việc `7.x` vào `TIEN-DO.md`, tăng PATCH, ghi nhật ký, tag, push. **Việc thêm giữa giai đoạn** (không 🔀) cũng tăng PATCH như sửa lỗi.
+8. Báo chủ dự án bằng tiếng Việt: bảng đối chiếu ✅/❌, đã thử thế nào (thật/giả lập), số đo (nếu có), phiên bản mới, còn gì chưa xong.
 
 ## 2. Điều CẤM
 - ❌ Không ghi API key, client secret, token, mật khẩu vào code hay bất kỳ file nào được commit. Key Gemini do người dùng nhập trong màn Cài đặt và chỉ lưu trên thiết bị.
@@ -51,6 +54,8 @@ Số phiên bản nằm duy nhất ở `app/js/core/version.js` và phải khớ
 - Mỗi module một trách nhiệm, chỉ giao tiếp qua các hàm export đã ghi trong `docs/KIEN-TRUC.md` mục "Hợp đồng module".
 - Mọi thao tác mạng phải có xử lý lỗi + thông báo tiếng Việt dễ hiểu cho người dùng.
 - Giao diện phải dùng tốt trên điện thoại (màn 360px) và máy tính.
+- **Tiết kiệm RAM & bộ nhớ, vẫn nhanh** (ngân sách: `docs/KIEN-TRUC.md` mục 8b): không giữ ảnh/dữ liệu lớn trong biến sống lâu; cache có giới hạn; đọc IndexedDB theo nhu cầu, không nạp cả kho để đếm; danh sách dùng ảnh nhỏ, ảnh đầy đủ chỉ khi mở, `URL.revokeObjectURL` khi xong; rời màn → gỡ sự kiện, xoá hẹn giờ (`cleanups`); việc ngầm chỉ chạy khi app hiển thị và nhường thao tác người dùng. Tối ưu phải đo trước/sau và **không làm trải nghiệm tệ đi** — có đánh đổi thì hỏi chủ.
+- Thêm thư viện phải ghi lý do + dung lượng vào `app/vendor/README.md`; ưu tiên hàm có sẵn của trình duyệt.
 - **Thêm/xoá/đổi tên file trong `app/`** → bắt buộc cập nhật danh sách `SHELL` trong `app/sw.js` (được phép sửa riêng dòng đó dù ngoài phạm vi). File thiếu trong danh sách = bản mới không cài được trên máy người dùng.
 - **Kiểm thử giả lập** (mock fetch, dữ liệu giả tiêm vào trình duyệt) phải gỡ bỏ và tải lại tab trước khi bàn giao, và nói rõ cho chủ dự án biết phần nào đã thử thật, phần nào mới giả lập.
 - **Không đổi cách viết import** (`import ... from "./x.js"`, đường dẫn tương đối, có đuôi `.js`): khi deploy, `scripts/stamp_version.py` dựa vào đó để gắn `?v=<phiên bản>`. Không dùng `import()` động với đường dẫn ghép chuỗi. Thử cục bộ không gắn số → tải lại bằng Ctrl+Shift+R.

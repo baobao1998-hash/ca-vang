@@ -222,6 +222,19 @@ exportZip() / exportJson() -> Blob ; importJson(file) ; writeDailySnapshot()
 - Không `innerHTML` với dữ liệu người dùng / OCR.
 - Ảnh gửi Gemini (gói miễn phí) có thể được Google dùng để cải thiện sản phẩm — chủ dự án đã đồng ý. Có công tắc "Không gửi AI" cho từng bằng chứng nhạy cảm.
 
+## 8b. Hiệu năng & bộ nhớ (ngân sách — vượt là lỗi, từ v1.0.1)
+Nguyên tắc: tiết kiệm RAM/bộ nhớ nhưng **không làm trải nghiệm tệ đi**; mọi tối ưu đo trước/sau. Chi tiết kỹ thuật: skill `khoi-dong-du-an` → `references/hieu-nang.md`.
+
+| Chỉ số | Ngân sách | Số đo gần nhất |
+|---|---|---|
+| Mở app tới lúc danh sách hiện | ≤ 2 giây (điện thoại tầm trung) | 451 ms với 10.000 bản ghi, Chrome máy tính (v0.5.x, việc 6.1) · 135 ms khi trống (2026-11-11) |
+| Tìm (gõ → có kết quả) | ≤ 100 ms | trung bình 9,1 ms, chậm nhất 31 ms / 10.000 bản ghi (việc 6.1) |
+| Danh sách | vẽ ≤ 60 thẻ/trang | 60 thẻ + "Xem thêm" (việc 6.1) |
+| RAM tab khi dùng bình thường | ≤ 150 MB | chưa đo trên điện thoại — đo ở lần rà soát sau |
+| Code tải lần đầu (JS+CSS+thư viện) | ≤ 500 KB | ≈ 296 KB (JS 187 KB, CSS 29 KB, MiniSearch 78 KB) · 2026-11-11 |
+| Bộ nhớ trên máy | ảnh tải sẵn có công tắc + nút xoá; xin `persist()` | có (v0.5.2) |
+| Việc ngầm | chỉ khi app hiển thị, nhường thao tác, ưu tiên thấp | tải sẵn ảnh: dừng khi chạm/cuộn, rảnh 4 giây mới tải (v1.0.1) |
+
 ## 9. Giao diện Liquid Glass
 - Nền: gradient màu mềm chuyển động chậm (có thể tắt — `prefers-reduced-motion`).
 - Thẻ/thanh: `background: rgba(255,255,255,.12–.22)`, `backdrop-filter: blur(20–28px) saturate(180%)`, viền 1px sáng mờ, bóng mềm, bo góc 20–28px, ánh sáng phản chiếu nhẹ ở cạnh trên.

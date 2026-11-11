@@ -6,7 +6,29 @@ Cách dùng:
 3. Làm xong, phiên sẽ báo phiên bản mới. Anh/chị mở `NHAT-KY-PHIEN-BAN.md` là thấy.
 4. Muốn chạy song song: chỉ các việc có 🔀 trong cùng giai đoạn (xem `TIEN-DO.md`).
 
-Câu mở đầu chung (đã nằm sẵn trong từng prompt):
+Từ v1.0.1, mọi prompt mới viết theo khuôn dưới đây (có "Không làm", "Hiệu năng", "Tự đối chiếu") để tránh làm lan man.
+
+### Khuôn prompt việc mới
+```
+Đọc CLAUDE.md, docs/KIEN-TRUC.md, TIEN-DO.md, docs/RA-SOAT.md trước. Tuân thủ tuyệt đối quy trình trong CLAUDE.md.
+Bạn nhận VIỆC <mã> — <tên>.
+Mục tiêu (chủ thấy được gì khi xong): ...
+Phạm vi file: ... (khớp cột "File được sửa" trong TIEN-DO.md)
+Yêu cầu (mỗi dòng kiểm được đúng/sai, tối đa ~15 dòng):
+- ...
+Không làm: ...
+Hiệu năng: <ngân sách liên quan — docs/KIEN-TRUC.md mục 8b>
+Kiểm tra trước khi bàn giao: mở app trong preview, thử <...>, console không lỗi, khổ 360px, đo <chỉ số> trước/sau; gỡ mock, tải lại tab, tắt server chạy thử.
+Tự đối chiếu: đọc lại prompt này, đánh dấu từng yêu cầu ✅/❌; git diff --stat chỉ có file trong phạm vi.
+Báo lại bằng tiếng Việt: bảng đối chiếu ✅/❌, thử thế nào (thật/giả lập), số đo, phiên bản mới, còn gì chưa xong.
+```
+
+### Rà soát prompt & luật (Opus — sau mỗi đợt việc, hoặc khi phiên con làm lan man/sai luật)
+```
+Rà soát quy trình theo skill khoi-dong-du-an (references/ra-soat-prompt.md): so kết quả các việc gần đây với prompt, tìm chỗ làm lan man / sai luật, sửa CLAUDE.md và docs/GIAO-VIEC.md, ghi docs/RA-SOAT.md. Báo tôi ngắn gọn đã sửa gì.
+```
+
+Câu mở đầu chung (các prompt cũ bên dưới):
 > Đọc CLAUDE.md, docs/KIEN-TRUC.md, TIEN-DO.md trước. Tuân thủ tuyệt đối quy trình trong CLAUDE.md.
 
 ---
